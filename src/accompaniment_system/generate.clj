@@ -231,7 +231,7 @@
   )
 
 
-;;check whether a hit is a resonant hit or not
+;;check whether a hit is a resonant hit
 
 (defn resonant [hit]
 
