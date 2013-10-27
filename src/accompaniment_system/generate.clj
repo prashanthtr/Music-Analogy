@@ -1,6 +1,6 @@
-                                        ;generate combinations
+;This program uses multiple rules to generate different possible improvisations. It does it by first identifying the parts of the lead that can be improvised and substitutes the appropriate improvisatory action for those parts.
 
-;;substitues correpsonding variable for pause and double taps
+;;substitues corresponding "variable" for pause, double taps and accented or non accented positions, based on the "subst" mapping
 
 (defn doubletap [ mSol Sol pos st subst]
 
@@ -18,6 +18,7 @@
 
   )
 
+;returns lenght of a list
 
 (defn lengthList [list len]
 
@@ -30,6 +31,7 @@
 
   )
 
+;returns character at a particular position in the list
 (defn charAtPos [lists pos st]
 
   (cond
@@ -42,41 +44,15 @@
   )
 
 
-(defn doublete [sol1 sol2 sol]
 
-  (if (empty? sol)
 
-    nil
-    (cons (cond
 
-     (and (list? sol1) (list? sol2)) sol2
-
-     (and (list? sol1) (not (list? sol2))) (if (and (= sol2 'te) (= (rest sol1) '(te)))
-                                             'ta
-                                             sol2;(list sol2)
-                                             )
-
-     (and (list? sol2) (not (list? sol1))) ( if (and (= sol1 'te) (= (first sol2) 'te))
-                                             '(tum ta)
-                                             sol2;(list sol2)
-                                             )
-
-     (and (not (list? sol2)) (not (list? sol1))) (  if (and (= sol1 'te) (= sol2 'te))
-                                                   'ta;(do (println "entered") '(ta) )
-                                                   sol2;(do (println "entered") (list sol2) )
-
-                                                   )
-
-     )
-          (doublete (first sol) (first (rest sol)) (rest sol)) )
-
-    )
-
-;;; the next hit after double tap can never be the same hit as the ending hit nor on the same fi??
-
-;; current code distinguishes between te and tum as hits on separate finger, but putting them on same finger will reduce the number of possible double hits
 
 ;; code that selects the positions to introduce double taps and the double tap to replace, It uses the above simple rules to adjust the subsequent notes in the generated double taps
+
+
+
+;;changes the hit in the case of continuous repetition of the same hit even after double tap. current code distinguishes between te and tum as hits on separate finger, but putting them on same finger will reduce the number of possible double hits
 
 (defn changesol [sol]
 
@@ -89,7 +65,8 @@
 
   )
 
-;;three
+;;Derived from Rule1: The hit following a double tap cannot be the same hit as the ending hit of the tap.
+
 (defn ruleDouble [sol1 sol2 sol]
 
   (if (empty? sol)
@@ -126,7 +103,7 @@
 
   )
 
-;;double hits and pauses
+;;identifies the position of double hits and pauses in 8 beat groove
 (defn posHit [sol ctr]
 
   (cond
@@ -142,6 +119,8 @@
 
   )
 
+;; identifies the unchangable or forced hits in a 8 beat groove based on the accent position
+
 (defn notChangeRule [doublehit accent]
 
   (cond
@@ -154,13 +133,14 @@
 
   )
 
+;; identifies the positions of the double hits, pauses from mridangam sol and returns a list with next positions of the hits as "Variable" too.
+
 (defn positions [sol]
 
   (let [hits (posHit sol 0) ]
 
-    (println hits)
-
-    ( println ( map inc hits))
+                                        ;(println hits)
+                                        ;( println ( map inc hits))
 
     (cond
 
@@ -180,16 +160,9 @@
 
                                         ; forward or backward addition of notes - backward additions as of now
 
-(defn notchangable [accent]
 
-  (if (empty? (rest accent))
-
-    nil
-    (cons (first accent) (notchangable (rest accent))  )
-
-    )
-
-  )
+;;returns not accented positions in a groove
+                                        ;(concat pos (nonAccent pos Sol accent 0))
 
 (defn nonAccent [pos newsol accent ctr]
 
@@ -208,8 +181,8 @@
 
   )
 
-;(concat pos (nonAccent pos Sol accent 0))
-;;identifies the context of the hit in the bar
+
+;;identifies the context of the variable hit in the bar based on the whether the variability is a result of pause, double hit or non accented hit. This is the decision making part of the whole code:
 
 (defn identify-context [subs ksol st]
 
@@ -243,6 +216,8 @@
 ;; double tap is directive of secondary's improvisation as it highlights the points around which variations can be done
 ;; no double taps offers slightly larger scope for improv
 
+
+
 (defn improv-choice [subs ksol st]
 
   (cond
@@ -255,6 +230,8 @@
 
   )
 
+
+;;check whether a hit is a resonant hit or not
 
 (defn resonant [hit]
 
@@ -287,6 +264,8 @@
 
   )
 
+;;generates a seconary response to lead based on a given lead, secondary pattern, accent structure, substition variables and possible improvisational substitions.
+
 (defn gen [mSol Sol accent subst improv]
 
   (let [ pos (notChangeRule (distinct (concat (positions mSol) (nonAccentPos mSol accent 0 ) )) accent) newSol (doubletap mSol Sol pos 0 subst)
@@ -312,6 +291,7 @@
     )
   )
 
+;;returns a subsequence of an list given start and end position
 
 (defn subsequ [pattern st end zero ]
 
@@ -328,6 +308,7 @@
   )
 
 
+;;returns a binary sequence appended with appropriate 0's given a number. used in generating combinations.
 
 (defn binary [num]
 
@@ -339,7 +320,9 @@
 
    )
 
- )
+  )
+
+;;power given a base
 
 (defn pow [base exp st acc]
 
@@ -351,6 +334,7 @@
 
   )
 
+;;corrects the binary conversion by appending zeroes in front
 (defn correctBinary [arr bin]
 
     ( let [max (lengthList (binary (- (pow 2 (lengthList arr 0) 0 1) 1)) 0)]
@@ -368,7 +352,8 @@
     )
 
 
-;;interprets a whole pattern
+;; Turns the combinations array  in binary representation to variables and their substitutions. 1's in the representation are substituted and zeroes are left as variable.
+
 (defn interpret [comb improvsubst sol st]
 
 
@@ -383,6 +368,7 @@
   )
 
 
+; Fills the kanjira sol with substituted array
 (defn fill [ksol st pos substituted]
 
 
@@ -395,6 +381,7 @@
 
   )
 
+;;generates 2^n combinations based on the position array of pauses, double hits and non accented resonant positions. Also needs, original kanjira sol, substituions and position array in the context.
 
 (defn combination [arr st subst sol ksol pos]
 
@@ -402,24 +389,6 @@
    (< st (pow 2 (lengthList arr 0) 0 1)) (do (println (fill ksol 0 pos (interpret (correctBinary arr (reverse (binary st)) ) subst sol 0 ))) (combination arr (+ st 1) subst sol ksol pos) )
    :else nil
    )
-
-  )
-
-
-(defn notAccent [pos newsol accent ctr]
-
-  ;(println pos)
-
-  ( if (empty? newsol)
-
-    nil
-    (if (and (= -1 ( .indexOf accent ctr)) (= -1 ( .indexOf pos ctr))  )
-
-      true
-      false
-      )
-
-    )
 
   )
 
