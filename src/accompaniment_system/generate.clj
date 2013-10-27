@@ -72,59 +72,11 @@
 
     )
 
-  )
-
-; first rule that says no consecutive te's anywhere
-(defn rule1 [sol]
-
-  (cons (first sol)
-        ( doublete (first sol) (first (rest sol)) (rest sol) )
-
-        )
-  )
-
-(defn doubletum [sol1 sol2 sol]
-
-   (if (empty? sol)
-
-    nil
-    (cons (cond
-
-     (and (list? sol1) (list? sol2)) sol2
-
-     (and (list? sol1) (not (list? sol2))) (if (and (= sol2 'tum) (= (rest sol1) '(tum)))
-                                             'ta
-                                             sol2;(list sol2)
-                                             )
-
-     :else sol2
-     )
-          (doubletum (first sol) (first (rest sol)) (rest sol)) )
-
-    )
-
-
-
-  )
-
-
-                                        ;rule 2 is no triple tums
-(defn rule2 [sol]
-
-  (cons (first sol)
-        ( doubletum (first sol) (first (rest sol)) (rest sol) )
-
-        )
-  )
-
-
-
 ;;; the next hit after double tap can never be the same hit as the ending hit nor on the same fi??
 
 ;; current code distinguishes between te and tum as hits on separate finger, but putting them on same finger will reduce the number of possible double hits
 
 ;; code that selects the positions to introduce double taps and the double tap to replace, It uses the above simple rules to adjust the subsequent notes in the generated double taps
-
 
 (defn changesol [sol]
 
@@ -174,7 +126,6 @@
 
   )
 
-
 ;;double hits and pauses
 (defn posHit [sol ctr]
 
@@ -190,19 +141,6 @@
    )
 
   )
-
-(defn singlecol [sol hits ctr]
-
-  (cond
-   (= sol nil) nil
-   (empty? sol) nil
-   ( not (= (.indexOf hits ctr) -1 ) ) ( cons (cons (+ ctr 1) hits) (singlecol (rest sol) hits (+ ctr 1)) )
-   :else (singlecol (rest sol) hits (+ ctr 1) )
-
-   )
-
-  )
-
 
 (defn notChangeRule [doublehit accent]
 
@@ -298,7 +236,6 @@
 
   )
 
-
 ;; double taps is constraining factor
 ;; pauses, non accented hits enhance options to improvise
 
@@ -317,7 +254,6 @@
    )
 
   )
-
 
 
 (defn resonant [hit]
@@ -405,7 +341,6 @@
 
  )
 
-
 (defn pow [base exp st acc]
 
   (cond
@@ -445,7 +380,6 @@
    (= (charAtPos comb st 0) 0) (cons (charAtPos sol st 0) (interpret comb improvsubst sol (+ st 1)))
    )
 
-
   )
 
 
@@ -470,18 +404,6 @@
    )
 
   )
-
-
-(defn resonant [hit]
-
-  (cond
-
-   ( or (= hit 'num) (= hit 'dhin) (= hit 'dheem) (= hit 'cha) (= hit 'thom) (= hit 'dham)  ) true
-   :else false
-   )
-
-  )
-
 
 
 (defn notAccent [pos newsol accent ctr]
