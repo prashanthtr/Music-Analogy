@@ -427,7 +427,9 @@
 
      (println st (cons (first newSol) (ruleDouble (first newSol) (first (rest newSol)) (rest newSol)) ))
 
-     (combination (+ st 1) subst sol ksol pos)
+     (cons (cons (first newSol) (ruleDouble (first newSol) (first (rest newSol)) (rest newSol)) ) (combination (+ st 1) subst sol ksol pos) )
+
+     ;(combination (+ st 1) subst sol ksol pos)
 
      )
 ;   (do (println (doublete (fill ksol 0 pos (interpret (correctBinary pos (reverse (binary st)) ) subst sol 0 )) )) (combination (+ st 1) subst sol ksol pos) )
@@ -435,7 +437,6 @@
    )
 
   )
-
 
 (defn variables [sol subst]
 
@@ -453,7 +454,7 @@
 
 ;;generates a seconary response to lead based on a given lead, secondary pattern, accent structure, substition variables and possible improvisational substitions.
 
-(defn gen [mSol Sol accent subst improv]
+(defn gen [mSol Sol accent subst improv improv2 improv3]
 
   (let [ pos (sort (notChangeRule (distinct (concat (positions mSol) (nonAccentPos mSol accent 0 ) )) accent)) newSol (doubletap mSol Sol pos 0 subst)
 
@@ -464,7 +465,9 @@
 
     (println "pos" pos "newsol" newSol)
 
-    (combination 0 improv (variables newSol improv) Sol pos)
+    (println (lengthList (distinct (concat (distinct (combination 0 improv (variables newSol improv) Sol pos)) (distinct (combination 0 improv2 (variables newSol improv2) Sol pos)) (distinct (combination 0 improv3 (variables newSol improv3) Sol pos))  ))  0)
+
+             )
 
                                         ;(println (improv-choice improv newSol 0 ))
 
@@ -475,6 +478,7 @@
     ;(do ( println (concat pos (nonAccent pos Sol accent 0)))  )
 
     ;;changes problem in the diction based on the ohysical constaints
+
     (cons (first newSol) (ruleDouble (first newSol) (first (rest newSol)) (rest newSol) )
           )
 
