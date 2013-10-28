@@ -144,7 +144,7 @@
 
     (cond
 
-     (not= nil hits) (distinct (concat hits (map inc hits)))
+     (not= nil hits) hits ;(distinct (concat hits (map inc hits)))
      :else nil
      )
     )
@@ -263,33 +263,6 @@
 
   )
 
-;;generates a seconary response to lead based on a given lead, secondary pattern, accent structure, substition variables and possible improvisational substitions.
-
-(defn gen [mSol Sol accent subst improv]
-
-  (let [ pos (notChangeRule (distinct (concat (positions mSol) (nonAccentPos mSol accent 0 ) )) accent) newSol (doubletap mSol Sol pos 0 subst)
-
- ]
-    ; (improv-choice improv (doubletap mSol Sol pos 0 subst) 0)
-                                        ;(doubletap mSol Sol pos 0 subst)
-
-
-    (println "pos" pos "newsol" newSol)
-    ;(println (improv-choice improv newSol 0 ))
-
-    ;(println (improv-choice (clojure.set/map-invert subst) newSol 0 ))
-
-    ;(improv-choice (clojure.set/map-invert subst) (doubletap mSol Sol pos 0 subst) )
-
-    ;(do ( println (concat pos (nonAccent pos Sol accent 0)))  )
-
-    ;;changes problem in the diction based on the ohysical constaints
-    (cons (first newSol) (ruleDouble (first newSol) (first (rest newSol)) (rest newSol) )
-          )
-
-    )
-  )
-
 ;;returns a subsequence of an list given start and end position
 
 (defn subsequ [pattern st end zero ]
@@ -366,30 +339,99 @@
 
   )
 
+(defn variable [var]
+
+  (cond
+
+   (= var '?p) true
+   (= var '?nA) true
+   (= var '?d) true
+   :else false
+
+   )
+
+  )
 
 ; Fills the kanjira sol with substituted array
 (defn fill [ksol st pos substituted]
 
 
+  ;(println substituted)
   (cond
 
    (>= st (lengthList ksol 0)) nil
    (not= -1 (.indexOf pos st)) (cons (first substituted ) (fill ksol (+ st 1) pos (rest substituted) ))
+
    :else (cons (charAtPos ksol st 0) (fill ksol (+ st 1) pos substituted  ))
    )
 
   )
 
+
+;;(if (variable (first substituted) )
+
+                                        ;  (cons (cons (charAtPos ksol st 0) (list (first substituted))) (fill ksol (+ st 1) pos substituted  ))
+
+  ;)
+
+
+
 ;;generates 2^n combinations based on the position array of pauses, double hits and non accented resonant positions. Also needs, original kanjira sol, substituions and position array in the context.
 
-(defn combination [arr st subst sol ksol pos]
+(defn combination [st subst sol ksol pos]
 
   (cond
-   (< st (pow 2 (lengthList arr 0) 0 1)) (do (println (fill ksol 0 pos (interpret (correctBinary arr (reverse (binary st)) ) subst sol 0 ))) (combination arr (+ st 1) subst sol ksol pos) )
+   (< st (pow 2 (lengthList pos 0) 0 1)) (do (println (fill ksol 0 pos (interpret (correctBinary pos (reverse (binary st)) ) subst sol 0 ))) (combination (+ st 1) subst sol ksol pos) )
    :else nil
    )
 
   )
+
+
+(defn variables [sol subst]
+
+  (cond
+
+   (empty? sol) nil
+   (not= nil (get subst (first sol))) (cons (first sol) (variables (rest sol) subst) )
+   :else (variables (rest sol) subst)
+
+   )
+
+
+  )
+
+
+;;generates a seconary response to lead based on a given lead, secondary pattern, accent structure, substition variables and possible improvisational substitions.
+
+(defn gen [mSol Sol accent subst improv]
+
+  (let [ pos (sort (notChangeRule (distinct (concat (positions mSol) (nonAccentPos mSol accent 0 ) )) accent)) newSol (doubletap mSol Sol pos 0 subst)
+
+ ]
+    ; (improv-choice improv (doubletap mSol Sol pos 0 subst) 0)
+                                        ;(doubletap mSol Sol pos 0 subst)
+
+
+    (println "pos" pos "newsol" newSol)
+
+    (combination 1 improv (variables newSol improv) Sol pos)
+
+                                        ;(println (improv-choice improv newSol 0 ))
+
+    ;(println (improv-choice (clojure.set/map-invert subst) newSol 0 ))
+
+    ;(improv-choice (clojure.set/map-invert subst) (doubletap mSol Sol pos 0 subst) )
+
+    ;(do ( println (concat pos (nonAccent pos Sol accent 0)))  )
+
+    ;;changes problem in the diction based on the ohysical constaints
+    (cons (first newSol) (ruleDouble (first newSol) (first (rest newSol)) (rest newSol) )
+          )
+
+    )
+  )
+
 
 
 
