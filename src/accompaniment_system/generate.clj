@@ -485,8 +485,6 @@
     )
   )
 
-
-
 ;(not= nil (get subs (first ksol)) ) ( cons (identify subs ksol)  )
 
 
