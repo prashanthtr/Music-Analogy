@@ -374,8 +374,6 @@
 
   ;)
 
-
-
 ;;generates 2^n combinations based on the position array of pauses, double hits and non accented resonant positions. Also needs, original kanjira sol, substituions and position array in the context.
 
 (defn combination [st subst sol ksol pos]
