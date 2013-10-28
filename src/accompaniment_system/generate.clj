@@ -65,7 +65,42 @@
 
   )
 
+
+
+
+
+;;;Physical constraints
+
+
+;;This constraint takes care of multiple ta ta's or te te's within a double hit
+(defn doublete [sol]
+
+
+  (cond
+
+   (empty? sol) nil
+   (or (= (first sol) '(ta ta)) (= (first sol) '(te te))) (cons (cons (changesol (first (first sol))) (rest (first sol))) (doublete (rest sol)))
+   :else (cons (first sol) (doublete (rest sol)))
+
+   )
+
+
+  )
+
 ;;Derived from Rule1: The hit following a double tap cannot be the same hit as the ending hit of the tap.
+
+;; physical constraints within different hits in the pattern
+;; does not distinguishes between te and tum as hits on separate fingers
+
+(defn finger [sol]
+
+  (cond
+
+   (or (= sol 'te) (= sol 'tum)) 1
+   :else 2
+   )
+
+  )
 
 (defn ruleDouble [sol1 sol2 sol]
 
@@ -74,12 +109,12 @@
     nil
     (cons (cond
 
-           (and (list? sol1) (list? sol2)) (if ( = (first sol2) (first (rest sol1)) )
+           (and (list? sol1) (list? sol2)) (if ( = (finger (first sol2)) (finger (first (rest sol1))) )
                                              (cons (changesol (first sol2)) (rest sol2))
                                              sol2
                                                )
 
-     (and (list? sol1) (not (list? sol2))) (if (= (first (rest sol1)) sol2)
+     (and (list? sol1) (not (list? sol2))) (if (= (finger (first (rest sol1))) (finger sol2))
                                              (changesol sol2)
                                              sol2;(list sol2)
                                              )
@@ -102,6 +137,8 @@
     )
 
   )
+
+
 
 ;;identifies the position of double hits and pauses in 8 beat groove
 (defn posHit [sol ctr]
@@ -379,7 +416,16 @@
 (defn combination [st subst sol ksol pos]
 
   (cond
-   (< st (pow 2 (lengthList pos 0) 0 1)) (do (println (fill ksol 0 pos (interpret (correctBinary pos (reverse (binary st)) ) subst sol 0 ))) (combination (+ st 1) subst sol ksol pos) )
+   (< st (pow 2 (lengthList pos 0) 0 1))
+
+   (let [ newSol (doublete (fill ksol 0 pos (interpret (correctBinary pos (reverse (binary st)) ) subst sol 0 )) ) ]
+
+     (println (cons (first newSol) (ruleDouble (first newSol) (first (rest newSol)) (rest newSol)) ))
+
+     (combination (+ st 1) subst sol ksol pos)
+
+     )
+;   (do (println (doublete (fill ksol 0 pos (interpret (correctBinary pos (reverse (binary st)) ) subst sol 0 )) )) (combination (+ st 1) subst sol ksol pos) )
    :else nil
    )
 
@@ -429,7 +475,6 @@
 
     )
   )
-
 
 
 
