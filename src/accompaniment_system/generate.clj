@@ -451,31 +451,58 @@
 
   )
 
+;;no empty or 3 substitutions
+
+(defn gen-subst [sol subst pos ksol]
+
+  (cond
+
+   (empty? (first subst)) nil
+   ( or (empty? (first (first subst))) (empty? (rest (first subst)) ) (= 3 ( lengthList (first (first subst)) 0)) (= 3 ( lengthList (rest (first subst)) 0))  ) (gen-subst sol (rest subst) pos ksol)
+
+   :else
+   (let [improv {'?p (first (first subst)) '?nA (rest (first subst)) '?d '(ta te)}]
+
+     (do (println (combination 0 improv (variables sol improv) ksol pos)) (gen-subst sol (rest subst) pos ksol)  )
+
+     ;(let [ concated (distinct (concat (distinct (combination 0 improv (variables sol improv) ksol pos)) (gen-subst sol (rest subst) pos ksol)))]
+
+                                        ;(lengthList concated 0)
+
+       ;)
+
+
+     )
+   )
+
+  )
 
 ;;generates a seconary response to lead based on a given lead, secondary pattern, accent structure, substition variables and possible improvisational substitions.
 
 (defn gen [mSol Sol accent subst improv improv2 improv3]
 
-  (let [ pos (sort (notChangeRule (distinct (concat (positions mSol) (nonAccentPos mSol accent 0 ) )) accent)) newSol (doubletap mSol Sol pos 0 subst)
+  (let [ pos (sort (notChangeRule (distinct (concat (positions mSol) (nonAccentPos mSol accent 0 ) )) accent)) newSol (doubletap mSol Sol pos 0 subst) cartprod (cartesian-product (subsets '(ta te tum)) (subsets '(ta te tum)) )
 
  ]
     ; (improv-choice improv (doubletap mSol Sol pos 0 subst) 0)
                                         ;(doubletap mSol Sol pos 0 subst)
 
 
-    (println "pos" pos "newsol" newSol)
+    (println "pos" pos "newsol" newSol cartprod)
 
-    (println (lengthList (distinct (concat (distinct (combination 0 improv (variables newSol improv) Sol pos)) (distinct (combination 0 improv2 (variables newSol improv2) Sol pos)) (distinct (combination 0 improv3 (variables newSol improv3) Sol pos))  ))  0)
+    (gen-subst newSol cartprod pos Sol)
 
-             )
+    ;(println (lengthList (distinct (concat (distinct (combination 0 improv (variables newSol improv) Sol pos)) (distinct (combination 0 improv2 (variables newSol improv2) Sol pos)) (distinct (combination 0 improv3 (variables newSol improv3) Sol pos))  ))  0)
+
+             ;)
 
                                         ;(println (improv-choice improv newSol 0 ))
 
-    ;(println (improv-choice (clojure.set/map-invert subst) newSol 0 ))
+                                        ;(println (improv-choice (clojure.set/map-invert subst) newSol 0 ))
 
-    ;(improv-choice (clojure.set/map-invert subst) (doubletap mSol Sol pos 0 subst) )
+                                        ;(improv-choice (clojure.set/map-invert subst) (doubletap mSol Sol pos 0 subst) )
 
-    ;(do ( println (concat pos (nonAccent pos Sol accent 0)))  )
+                                        ;(do ( println (concat pos (nonAccent pos Sol accent 0)))  )
 
     ;;changes problem in the diction based on the ohysical constaints
 
