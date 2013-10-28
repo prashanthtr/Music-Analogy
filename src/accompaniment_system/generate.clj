@@ -383,7 +383,7 @@
    (= var '?p) true
    (= var '?nA) true
    (= var '?d) true
-   :else false
+   :else nil
 
    )
 
@@ -397,7 +397,12 @@
   (cond
 
    (>= st (lengthList ksol 0)) nil
-   (not= -1 (.indexOf pos st)) (cons (first substituted ) (fill ksol (+ st 1) pos (rest substituted) ))
+   (not= -1 (.indexOf pos st)) (cond
+
+                                (= nil (variable (first substituted))) (cons (first substituted ) (fill ksol (+ st 1) pos (rest substituted) ))
+                                :else (cons (charAtPos ksol st 0) (fill ksol (+ st 1) pos (rest substituted)  ))
+
+                                )
 
    :else (cons (charAtPos ksol st 0) (fill ksol (+ st 1) pos substituted  ))
    )
@@ -420,7 +425,7 @@
 
    (let [ newSol (doublete (fill ksol 0 pos (interpret (correctBinary pos (reverse (binary st)) ) subst sol 0 )) ) ]
 
-     (println (cons (first newSol) (ruleDouble (first newSol) (first (rest newSol)) (rest newSol)) ))
+     (println st (cons (first newSol) (ruleDouble (first newSol) (first (rest newSol)) (rest newSol)) ))
 
      (combination (+ st 1) subst sol ksol pos)
 
@@ -459,7 +464,7 @@
 
     (println "pos" pos "newsol" newSol)
 
-    (combination 1 improv (variables newSol improv) Sol pos)
+    (combination 0 improv (variables newSol improv) Sol pos)
 
                                         ;(println (improv-choice improv newSol 0 ))
 
