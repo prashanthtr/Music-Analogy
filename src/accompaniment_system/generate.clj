@@ -84,8 +84,22 @@
 
    )
 
+  )
+
+;;double hit == more generalized version of double te, knows only sol in the context
+(defn doubleteta [sol]
+
+
+  (cond
+
+   (empty? sol) nil
+   (or (= sol '(ta ta)) (= sol '(te te))) (cons (changesol (first sol)) (rest sol))
+   :else sol
+
+   )
 
   )
+
 
 ;;Derived from Rule1: The hit following a double tap cannot be the same hit as the ending hit of the tap.
 
@@ -425,7 +439,7 @@
 
    (let [ newSol (doublete (fill ksol 0 pos (interpret (correctBinary pos (reverse (binary st)) ) subst sol 0 )) ) ]
 
-     (println st (cons (first newSol) (ruleDouble (first newSol) (first (rest newSol)) (rest newSol)) ))
+    ; (println st (cons (first newSol) (ruleDouble (first newSol) (first (rest newSol)) (rest newSol)) ))
 
      (cons (cons (first newSol) (ruleDouble (first newSol) (first (rest newSol)) (rest newSol)) ) (combination (+ st 1) subst sol ksol pos) )
 
@@ -463,7 +477,9 @@
    :else
    (let [improv {'?p (first (first subst)) '?nA (rest (first subst)) '?d '(ta te)}]
 
-     (do (println (combination 0 improv (variables sol improv) ksol pos)) (gen-subst sol (rest subst) pos ksol)  )
+     ;(do (println (combination 0 improv (variables sol improv) ksol pos))   )
+
+     (concat (combination 0 improv (variables sol improv) ksol pos) ( gen-subst sol (rest subst) pos ksol))
 
      ;(let [ concated (distinct (concat (distinct (combination 0 improv (variables sol improv) ksol pos)) (gen-subst sol (rest subst) pos ksol)))]
 
@@ -477,20 +493,68 @@
 
   )
 
+
+;;returns a list of same element as map
+(defn samemap [perm]
+
+  (cond
+
+  (empty? perm) nil
+  :else ( cons (list (first perm) (first perm) ) (samemap (rest perm) )  )
+
+   )
+
+  )
+
+;; returns single and double substitutions possible -- including () no substitution
+(defn powerset [perm-sol]
+
+  (let [substitutions  (concat '(()) (combinations perm-sol 1) (concat (combinations perm-sol 2)  (map reverse (combinations perm-sol 2)) (samemap perm-sol) )
+                               )]
+
+    (distinct ( concat (first substitutions) (map doubleteta (rest substitutions)) ))
+
+    )
+
+  )
+
+
+;;neatly displays
+
+(defn display [list]
+
+  (cond
+
+   (empty? list) nil
+   :else (do (println (first list)) (display (rest list)))
+
+   )
+
+  )
+
+;;test case  (gen '(num dhin dhin dhin num dhin . dhin) '(ta tum tum ta ta tum tum ta) '(0 1 2 3 4 5 7) {'. '?p '(num tha) '?d 'num '?nA 'dhin '?nA} )
+
 ;;generates a seconary response to lead based on a given lead, secondary pattern, accent structure, substition variables and possible improvisational substitions.
 
-(defn gen [mSol Sol accent subst improv improv2 improv3]
+(defn gen [mSol Sol accent subst]
 
-  (let [ pos (sort (notChangeRule (distinct (concat (positions mSol) (nonAccentPos mSol accent 0 ) )) accent)) newSol (doubletap mSol Sol pos 0 subst) cartprod (cartesian-product (subsets '(ta te tum)) (subsets '(ta te tum)) )
-
- ]
+  (let [ pos (sort (notChangeRule (distinct (concat (positions mSol) (nonAccentPos mSol accent 0 ) )) accent)) newSol (doubletap mSol Sol pos 0 subst) cartprod (cartesian-product (powerset '(ta te tum)) (powerset '(ta te tum)))
+        ;(cartesian-product (subsets '(ta te tum)) (subsets '(ta te tum)) )
+        ]
     ; (improv-choice improv (doubletap mSol Sol pos 0 subst) 0)
                                         ;(doubletap mSol Sol pos 0 subst)
 
 
-    (println "pos" pos "newsol" newSol cartprod)
+    (println "pos" pos "newsol" newSol)
 
-    (gen-subst newSol cartprod pos Sol)
+    (let [ accomp (gen-subst newSol cartprod pos Sol)]
+
+
+      (display (distinct accomp) )
+      (println  (lengthList accomp 0) (lengthList (distinct accomp) 0))
+
+     )
+
 
     ;(println (lengthList (distinct (concat (distinct (combination 0 improv (variables newSol improv) Sol pos)) (distinct (combination 0 improv2 (variables newSol improv2) Sol pos)) (distinct (combination 0 improv3 (variables newSol improv3) Sol pos))  ))  0)
 
@@ -506,8 +570,8 @@
 
     ;;changes problem in the diction based on the ohysical constaints
 
-    (cons (first newSol) (ruleDouble (first newSol) (first (rest newSol)) (rest newSol) )
-          )
+   ;(cons (first newSol) (ruleDouble (first newSol) (first (rest newSol)) (rest newSol) )
+          ; )
 
     )
   )
