@@ -10,7 +10,8 @@
     :else (if ( = -1 (.indexOf pos st) )
 
             ( cons (first Sol) (doubletap (rest mSol) (rest Sol) pos (+ st 1) subst)  )
-            (do (println subst (first mSol) ) ( cons (get subst (first mSol)) (doubletap (rest mSol) (rest Sol) pos (+ st 1) subst)) )
+            ( cons (get subst (first mSol)) (doubletap (rest mSol) (rest Sol) pos (+ st 1) subst))
+                                        ;(do (println subst (first mSol) )  )
             ;
             )
 
@@ -544,16 +545,18 @@
     ; (improv-choice improv (doubletap mSol Sol pos 0 subst) 0)
                                         ;(doubletap mSol Sol pos 0 subst)
 
-
-    (println "pos" pos "newsol" newSol)
+    (println "Substitutions recognized" subst)
+    (println "Variable positions" pos )
+    (println "Varialbe groove" newSol)
+    (print "Variations are:")
 
     (let [ accomp (gen-subst newSol cartprod pos Sol)]
 
-
       (display (distinct accomp) )
-      (println  (lengthList accomp 0) (lengthList (distinct accomp) 0))
+      (println "Total Variations" (lengthList accomp 0) )
+      (println "Non redundant variations" (lengthList (distinct accomp) 0))
 
-     )
+      )
 
 
     ;(println (lengthList (distinct (concat (distinct (combination 0 improv (variables newSol improv) Sol pos)) (distinct (combination 0 improv2 (variables newSol improv2) Sol pos)) (distinct (combination 0 improv3 (variables newSol improv3) Sol pos))  ))  0)
