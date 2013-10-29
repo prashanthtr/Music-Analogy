@@ -101,7 +101,6 @@
 
   )
 
-
 ;;Derived from Rule1: The hit following a double tap cannot be the same hit as the ending hit of the tap.
 
 ;; physical constraints within different hits in the pattern
@@ -152,7 +151,6 @@
     )
 
   )
-
 
 
 ;;identifies the position of double hits and pauses in 8 beat groove
@@ -268,8 +266,6 @@
 ;; double tap is directive of secondary's improvisation as it highlights the points around which variations can be done
 ;; no double taps offers slightly larger scope for improv
 
-
-
 (defn improv-choice [subs ksol st]
 
   (cond
@@ -372,9 +368,7 @@
 
     )
 
-
     )
-
 
 ;; Turns the combinations array  in binary representation to variables and their substitutions. 1's in the representation are substituted and zeroes are left as variable.
 
@@ -391,6 +385,8 @@
 
   )
 
+
+
 (defn variable [var]
 
   (cond
@@ -401,8 +397,49 @@
    :else nil
 
    )
+  )
+
+
+
+(defn pos-variation [sol st]
+
+  (cond
+
+   (= true (variable (charAtPos sol st 0))) (posvariation sol (+ st 1) )
+   :else (- st 1)
+
+   )
 
   )
+
+
+(defn group-variations [sol st]
+
+  (let [start st]
+
+    (cond
+
+     (>= st (lengthList sol 0)) nil
+     (variable (charAtPos sol start 0) )
+     ;;consecutive
+     (let [end (pos-variation sol (+ start 1)) dif (- end start) start end]
+
+       (cons (cond
+
+              (= (charAtPos sol (- end dif) 0) '?p) '?p
+              :else '?nA
+
+              )
+
+             (group-variations sol (+ start 1)))
+
+       )
+     :else (cons (charAtPos sol start 0) (group-variations sol (+ start 1)))
+   )
+
+    )
+)
+
 
 ; Fills the kanjira sol with substituted array
 (defn fill [ksol st pos substituted]
@@ -473,7 +510,10 @@
   (cond
 
    (empty? (first subst)) nil
-   ( or (empty? (first (first subst))) (empty? (rest (first subst)) ) (= 3 ( lengthList (first (first subst)) 0)) (= 3 ( lengthList (rest (first subst)) 0))  ) (gen-subst sol (rest subst) pos ksol)
+   ( or (= 3 ( lengthList (first (first subst)) 0)) (= 3 ( lengthList (rest (first subst)) 0))  ) (gen-subst sol (rest subst) pos ksol)
+
+
+;(empty? (first (first subst))) (empty? (rest (first subst)) )
 
    :else
    (let [improv {'?p (first (first subst)) '?nA (rest (first subst)) '?d '(ta te)}]
@@ -533,6 +573,19 @@
 
   )
 
+
+;;finds positions from newsolthat contains '?p, '?nA etc
+(defn findpos [sol st]
+
+  (cond
+
+   (empty? sol) nil
+   (variable (first sol)) (cons st (findpos (rest sol) (+ st 1)))
+   :else (findpos (rest sol) (+ st 1))
+   )
+
+  )
+
 ;;test case  (gen '(num dhin dhin dhin num dhin . dhin) '(ta tum tum ta ta tum tum ta) '(0 1 2 3 4 5 7) {'. '?p '(num tha) '?d 'num '?nA 'dhin '?nA} )
 
 ;;generates a seconary response to lead based on a given lead, secondary pattern, accent structure, substition variables and possible improvisational substitions.
@@ -546,11 +599,13 @@
                                         ;(doubletap mSol Sol pos 0 subst)
 
     (println "Substitutions recognized" subst)
-    (println "Variable positions" pos )
-    (println "Varialbe groove" newSol)
-    (print "Variations are:")
 
-    (let [ accomp (gen-subst newSol cartprod pos Sol)]
+
+    (let [ newSol2 (group-variations newSol 0) pos2 (findpos newSol2 0) accomp (gen-subst newSol2 cartprod pos2 Sol)]
+
+      (println "Variable positions" pos2 )
+      (println "Varialbe groove" newSol2)
+      (print "Variations are:")
 
       (display (distinct accomp) )
       (println "Total Variations" (lengthList accomp 0) )
