@@ -698,8 +698,8 @@
 
       (empty? mSol) nil
       (= '. (first mSol)) '.
-      (or (= 'num (first mSol) ) (= 'dhin (first mSol) ) (= 'dheem (first mSol) )) 'tum
-      (list? (first mSol)) '(te ta)
+      (or (= 'num (first mSol) ) (= 'dham (first mSol) ) (= 'dhin (first mSol) ) (= 'dheem (first mSol) )) 'tum
+      (list? (first mSol)) '(te ta) ;;choice between te ta, tum ta and ta te
       :else 'ta
       )
 
@@ -720,3 +720,100 @@
     )
 
   )
+
+
+(defn random-subst [list pos]
+
+  ( charAtPos list (rand-int (lengthList list 0 )) 0 )
+
+  )
+
+
+(defn single-level-subst [pos]
+
+  (random-subst '(ta tum (ta te)) pos)
+
+  )
+
+(defn double-level-subst [pos]
+
+  (cond
+
+   (not= 0 pos) (random-subst '(((ta te) tum) ((ta te) (ta te))) pos)
+   :else (random-subst '((tum (ta te) ) (tum tum)) pos)
+
+   )
+
+  )
+
+(defn third-level-subst [pos]
+
+  (cond
+
+   (not= 0 pos) (random-subst '(((ta te) (ta te) (ta te)) ((te ta) (te ta) (te ta)) ) pos)
+   :else (random-subst '((tum tum tum) (tum ta tum)) pos)
+
+   )
+
+  )
+
+
+(defn multi-level-subst [sol st]
+
+                                        ; single subst
+                                        ;double subst
+                                        ;triple subst
+
+  (cond
+   ;;double
+   (>= st (lengthList sol 0)) nil
+
+   (and (list? (charAtPos sol st 0)) (list? (charAtPos sol (+ st 1) 0)) (list? (charAtPos sol (+ st 2) 0)) )
+   (cons (third-level-subst st) (multi-level-subst sol (+ st 3) ))
+
+   (and (list? (charAtPos sol st 0)) (list? (charAtPos sol (+ st 1) 0)) )
+   (cons (double-level-subst st) (multi-level-subst sol (+ st 2) ))
+
+   (variable (charAtPos sol st 0) ) (cons (single-level-subst st) (multi-level-subst sol (+ st 1) ) )
+   :else (cons (charAtPos sol st 0) (multi-level-subst sol (+ st 1) ))
+   )
+
+  )
+
+(defn bar-improv [sol ctr]
+
+
+  (println sol)
+  (cond
+
+   (>= ctr 4) nil
+   :else (bar-improv (multi-level-subst sol 0) (+ ctr 1))
+   )
+
+
+  )
+
+;; multiple points of variation in the groove
+;; but ideally limit to 1 variation in a bar
+;; certain sequence of variations imply a particlar build up whereas certain others are random
+;; substitutions take place at multiple levels -->
+
+;; first level -> each pause or either accented / non accented hit is substituted
+
+
+;; second level -> 2 hits
+;;1. ta te ta te -> tum tum or tum ta te (not much pitch bending) and vice versa,
+
+;; third level -> 3 hits
+;obvious examples -> ta te ta te ta te -> tum tum tum or tum ta tum with pitch bending, tum tum tum with increased loudness ( vice versa cases)
+
+;; for the sake of this research, max third level for now.
+
+;; for each substitution, there are double and triple levels possible
+
+;;context is identified as whether it is a pause, single hit( accented, non accented) or double hit
+
+
+;; non accented could stay as a non accented hit in the single substitution, in which case an adjacent pause is not added to it, however, if the non accented hit is replaced by a double hit , then a pause/nA/accented could combine with it in the second level of substitution and form a second variation to which another nA hit could add on.
+
+;; it is like a chain reaction, the first intrusion into the lead's pattern is the tricky part. after that, it leads to a chain of merging and changing and substituion by repeatedly adding on nearby hits to the substitutions and finally building up to conclude the improv cycle.
