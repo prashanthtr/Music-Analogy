@@ -405,7 +405,7 @@
 
   (cond
 
-   (= true (variable (charAtPos sol st 0))) (posvariation sol (+ st 1) )
+   (= true (variable (charAtPos sol st 0))) (pos-variation sol (+ st 1) )
    :else (- st 1)
 
    )
@@ -573,7 +573,6 @@
 
   )
 
-
 ;;finds positions from newsolthat contains '?p, '?nA etc
 (defn findpos [sol st]
 
@@ -585,6 +584,7 @@
    )
 
   )
+
 
 ;;test case  (gen '(num dhin dhin dhin num dhin . dhin) '(ta tum tum ta ta tum tum ta) '(0 1 2 3 4 5 7) {'. '?p '(num tha) '?d 'num '?nA 'dhin '?nA} )
 
@@ -599,13 +599,12 @@
                                         ;(doubletap mSol Sol pos 0 subst)
 
     (println "Substitutions recognized" subst)
+    (println "Variable positions" pos )
+    (println "Varialbe groove" newSol)
+    (print "Variations are:")
 
+    (let [ newSol2 (group-variations newSol 0) pos2 (findpos newSol2 0) accomp (gen-subst newSol cartprod pos Sol)]
 
-    (let [ newSol2 (group-variations newSol 0) pos2 (findpos newSol2 0) accomp (gen-subst newSol2 cartprod pos2 Sol)]
-
-      (println "Variable positions" pos2 )
-      (println "Varialbe groove" newSol2)
-      (print "Variations are:")
 
       (display (distinct accomp) )
       (println "Total Variations" (lengthList accomp 0) )
@@ -685,3 +684,39 @@
 
   ;; what are the sections of the lead that secondary varies
   ;; how does he vary
+
+
+(defn mriMap [mSol]
+
+  (if (empty? mSol)
+
+    nil
+    (cons
+
+
+     (cond
+
+      (empty? mSol) nil
+      (= '. (first mSol)) '.
+      (or (= 'num (first mSol) ) (= 'dhin (first mSol) ) (= 'dheem (first mSol) )) 'tum
+      (list? (first mSol)) '(te ta)
+      :else 'ta
+      )
+
+     (mriMap (rest mSol))
+     )
+
+    )
+
+
+  )
+
+(defn apply-rule-map [mSol]
+
+  (let [ksol (mriMap mSol)]
+
+    (cons (first ksol) (ruleDouble (first ksol) (first (rest ksol)) (rest ksol) ))
+
+    )
+
+  )
