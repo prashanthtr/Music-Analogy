@@ -726,9 +726,11 @@
   )
 
 
-(defn single-level-subst [pos]
+(defn single-level-subst [hit pos]
 
-  (random-subst '(ta tum (ta te)) pos)
+  (list? hit) (random-subst '(tum (ta te)) pos)
+  (resonant hit) (random-subst '(tum (ta te)) pos)
+  :else (random-subst '(ta te (ta te)) pos)
 
   )
 
@@ -765,13 +767,20 @@
    ;;double
    (>= st (lengthList sol 0)) nil
 
-   (and (list? (charAtPos sol st 0)) (list? (charAtPos sol (+ st 1) 0)) (list? (charAtPos sol (+ st 2) 0)) )
-   (cons (third-level-subst st) (multi-level-subst sol (+ st 3) ))
+  ; (and (list? (charAtPos sol st 0)) (list? (charAtPos sol (+ st 1) 0)) (list? (charAtPos sol (+ st 2) 0)) )
+   ;(do (println "triple subs") (cons (third-level-subst st) (multi-level-subst sol (+ st 3) )))
 
-   (and (list? (charAtPos sol st 0)) (list? (charAtPos sol (+ st 1) 0)) )
-   (cons (double-level-subst st) (multi-level-subst sol (+ st 2) ))
+   ;(and (list? (charAtPos sol st 0)) (list? (charAtPos sol (+ st 1) 0)) )
+   ;(do (println "Double subs") (cons (double-level-subst st) (multi-level-subst sol (+ st 2) )))
 
-   (variable (charAtPos sol st 0) ) (cons (single-level-subst st) (multi-level-subst sol (+ st 1) ) )
+   (and (variable (charAtPos sol st 0) ) (variable (charAtPos sol (+ st 1) 0)) (variable (charAtPos sol (+ st 2) 0)) )
+   (do (println "triple subs") (cons (third-level-subst st) (multi-level-subst sol (+ st 3) )))
+
+
+   (and (variable (charAtPos sol st 0) ) (variable (charAtPos sol (+ st 1) 0)) )
+   (do (println "Double subs") (cons (double-level-subst st) (multi-level-subst sol (+ st 2) )))
+
+   (variable (charAtPos sol st 0) ) (do (println "Single subs") (cons (single-level-subst (charAtPos sol st 0) st) (multi-level-subst sol (+ st 1) ) ))
    :else (cons (charAtPos sol st 0) (multi-level-subst sol (+ st 1) ))
    )
 
@@ -805,7 +814,6 @@
 
 
 (defn gen-subsumption [Sol accent subst st]
-
 
 
   (let [ pos (sort (notChangeRule (distinct (concat (positions Sol) (nonAccentPos Sol accent 0 ) )) accent)) newSol (var-sub (apply-rule-map Sol) pos 0 subst)
