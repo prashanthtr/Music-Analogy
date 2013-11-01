@@ -284,7 +284,7 @@
 
   (cond
 
-   ( or (= hit 'num) (= hit 'dhin) (= hit 'dheem) (= hit 'cha) (= hit 'thom) (= hit 'dham)  ) true
+   ( or (= hit 'num) (= hit 'dhin) (= hit 'dheem) (= hit 'cha) (= hit 'thom) (= hit 'dham) (= hit 'tum)  ) true
    :else false
    )
 
@@ -711,13 +711,10 @@
 
   )
 
-(defn apply-rule-map [mSol]
+;;applies the physical constraints on a sol
+(defn apply-rule-map [ksol]
 
-  (let [ksol (mriMap mSol)]
-
-    (cons (first ksol) (ruleDouble (first ksol) (first (rest ksol)) (rest ksol) ))
-
-    )
+  (doubleteta (cons (first ksol) (ruleDouble (first ksol) (first (rest ksol)) (rest ksol) )))
 
   )
 
@@ -793,6 +790,55 @@
 
   )
 
+
+(defn var-sub [ Sol pos st subst]
+
+  ( cond
+
+    (>= st (lengthList Sol 0)) nil
+    (= -1 (.indexOf pos st)) (cons (charAtPos Sol st 0) (var-sub Sol pos (+ st 1) subst))
+    :else (cons (get subst (charAtPos Sol st 0)) (var-sub Sol pos (+ st 1) subst))
+
+    )
+
+  )
+
+
+(defn gen-subsumption [Sol accent subst st]
+
+
+
+  (let [ pos (sort (notChangeRule (distinct (concat (positions Sol) (nonAccentPos Sol accent 0 ) )) accent)) newSol (var-sub (apply-rule-map Sol) pos 0 subst)
+        ]
+
+    (println newSol)
+
+    (cond
+
+       (>= st 4) nil
+       :else
+       (let [substSol (multi-level-subst newSol 0)]
+         (println substSol)
+         (gen-subsumption substSol accent subst (+ st 1))
+         )
+
+    )
+
+
+    )
+  )
+
+(defn main [mSol accent subst]
+
+
+  (let [ pos (sort (notChangeRule (distinct (concat (positions mSol) (nonAccentPos mSol accent 0 ) )) accent)) newSol (var-sub (apply-rule-map (mriMap mSol)) pos 0 subst)
+        ]
+
+    (gen-subsumption newSol accent subst 0)
+
+    )
+
+  )
 ;; multiple points of variation in the groove
 ;; but ideally limit to 1 variation in a bar
 ;; certain sequence of variations imply a particlar build up whereas certain others are random
