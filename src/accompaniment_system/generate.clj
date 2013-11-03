@@ -713,13 +713,15 @@
 
   )
 
-;tum followed by te is changed to tum
+                                        ;tum followed by te is changed to tum
+; te followed by tum is replaced by ta
 (defn tumteRule [ksol st]
 
   (cond
 
    (>= st (lengthList ksol 0)) nil
    ( and (= 'te (charAtPos ksol st 0) ) (= 'tum (charAtPos ksol (- st 1) 0) ) ) (cons 'tum (tumteRule ksol (+ st 1)) )
+   ( and (= 'te (charAtPos ksol st 0) ) (= 'tum (charAtPos ksol (+ st 1) 0) ) ) (cons 'ta (tumteRule ksol (+ st 1)) )
    :else (cons (charAtPos ksol st 0) (tumteRule ksol (+ st 1)) )
    )
 
