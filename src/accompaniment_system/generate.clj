@@ -728,6 +728,7 @@
 
 (defn single-level-subst [hit pos]
 
+
   (list? hit) (random-subst '(tum (ta te)) pos)
   (resonant hit) (random-subst '(tum (ta te)) pos)
   :else (random-subst '(ta te (ta te)) pos)
@@ -757,15 +758,33 @@
   )
 
 
+(defn ret-op [var]
+
+
+  (cond
+
+   (list? var) concat ;(do (println var "concat") concat)
+   :else cons ;(do (println var "cons") cons)
+   )
+
+  )
+
+
+;;makes substitution taking into account the speed of the hits in the substitution
 (defn multi-level-subst [sol st]
 
                                         ; single subst
                                         ;double subst
                                         ;triple subst
 
-  (cond
+  (if (>= st (lengthList sol 0))
+
+    nil
+    (let [hit (charAtPos sol st 0)]
+
+      (cond
    ;;double
-   (>= st (lengthList sol 0)) nil
+
 
   ; (and (list? (charAtPos sol st 0)) (list? (charAtPos sol (+ st 1) 0)) (list? (charAtPos sol (+ st 2) 0)) )
    ;(do (println "triple subs") (cons (third-level-subst st) (multi-level-subst sol (+ st 3) )))
@@ -773,16 +792,38 @@
    ;(and (list? (charAtPos sol st 0)) (list? (charAtPos sol (+ st 1) 0)) )
    ;(do (println "Double subs") (cons (double-level-subst st) (multi-level-subst sol (+ st 2) )))
 
-   (and (variable (charAtPos sol st 0) ) (variable (charAtPos sol (+ st 1) 0)) (variable (charAtPos sol (+ st 2) 0)) )
-   (do (println "triple subs") (cons (third-level-subst st) (multi-level-subst sol (+ st 3) )))
+       (>= st (lengthList sol 0)) nil
+       (and (variable hit ) (variable (charAtPos sol (+ st 1) 0)) (variable (charAtPos sol (+ st 2) 0)) )
+       (let [third-sub (third-level-subst st)]
 
+         (println third-sub "triple subs")
+         ((ret-op third-sub ) third-sub (multi-level-subst sol (+ st 3) ))
 
-   (and (variable (charAtPos sol st 0) ) (variable (charAtPos sol (+ st 1) 0)) )
-   (do (println "Double subs") (cons (double-level-subst st) (multi-level-subst sol (+ st 2) )))
+         )
 
-   (variable (charAtPos sol st 0) ) (do (println "Single subs") (cons (single-level-subst (charAtPos sol st 0) st) (multi-level-subst sol (+ st 1) ) ))
-   :else (cons (charAtPos sol st 0) (multi-level-subst sol (+ st 1) ))
-   )
+       (and (variable hit ) (variable (charAtPos sol (+ st 1) 0)) )
+       (let [second-sub (double-level-subst st)]
+
+         (println second-sub "double subs")
+         ((ret-op second-sub ) second-sub (multi-level-subst sol (+ st 2) ))
+
+         )
+
+       (variable hit)
+       (let [first-sub (single-level-subst hit st)]
+
+         (println first-sub "single subs")
+         (cons first-sub (multi-level-subst sol (+ st 1) ))
+
+         )
+
+       :else ( cons hit (multi-level-subst sol (+ st 1) ))
+       )
+
+      )
+
+    )
+
 
   )
 
@@ -799,15 +840,13 @@
 
   )
 
-
 (defn var-sub [ Sol pos st subst]
 
   ( cond
 
     (>= st (lengthList Sol 0)) nil
     (= -1 (.indexOf pos st)) (cons (charAtPos Sol st 0) (var-sub Sol pos (+ st 1) subst))
-    :else (cons (get subst (charAtPos Sol st 0)) (var-sub Sol pos (+ st 1) subst))
-
+    :else  (cons (get subst (charAtPos Sol st 0)) (var-sub Sol pos (+ st 1) subst))
     )
 
   )
