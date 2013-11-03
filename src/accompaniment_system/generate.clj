@@ -713,8 +713,9 @@
 
   )
 
-                                        ;tum followed by te is changed to tum
+;tum followed by te is changed to tum
 ; te followed by tum is replaced by ta
+
 (defn tumteRule [ksol st]
 
   (cond
@@ -733,7 +734,6 @@
   (tumteRule (doubleteta (cons (first ksol) (ruleDouble (first ksol) (first (rest ksol)) (rest ksol) ))) 0)
 
   )
-
 
 (defn random-subst [list pos]
 
@@ -755,7 +755,7 @@
 
   (cond
 
-   (not= 0 pos) (random-subst '(((ta te) tum) ((ta te) (ta te))) pos)
+   (not= 0 pos) (random-subst '(((ta te) tum) ((ta te) (ta te)) (tum .)) pos)
    :else (random-subst '((tum (ta te) ) (tum tum)) pos)
 
    )
@@ -877,7 +877,7 @@
 
     (cond
 
-       (>= st 4) nil
+       (>= st 10) nil
        :else
        (let [substSol (multi-level-subst newSol 0)]
          (println "variation" substSol)
