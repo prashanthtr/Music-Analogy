@@ -713,10 +713,22 @@
 
   )
 
+;tum followed by te is changed to tum
+(defn tumteRule [ksol st]
+
+  (cond
+
+   (>= st (lengthList ksol 0)) nil
+   ( and (= 'te (charAtPos ksol st 0) ) (= 'tum (charAtPos ksol (- st 1) 0) ) ) (cons 'tum (tumteRule ksol (+ st 1)) )
+   :else (cons (charAtPos ksol st 0) (tumteRule ksol (+ st 1)) )
+   )
+
+  )
+
 ;;applies the physical constraints on a sol
 (defn apply-rule-map [ksol]
 
-  (doubleteta (cons (first ksol) (ruleDouble (first ksol) (first (rest ksol)) (rest ksol) )))
+  (tumteRule (doubleteta (cons (first ksol) (ruleDouble (first ksol) (first (rest ksol)) (rest ksol) ))) 0)
 
   )
 
@@ -798,7 +810,7 @@
        (and (variable hit ) (variable (charAtPos sol (+ st 1) 0)) (variable (charAtPos sol (+ st 2) 0)) )
        (let [third-sub (third-level-subst st)]
 
-         ;(println third-sub "triple subs")
+         (println third-sub "triple subs")
          ((ret-op third-sub ) third-sub (multi-level-subst sol (+ st 3) ))
 
          )
@@ -853,45 +865,50 @@
 
   )
 
-
 (defn gen-subsumption [Sol accent subst st]
 
 
   (let [ pos (sort (notChangeRule (distinct (concat (positions Sol) (nonAccentPos Sol accent 0 ) )) accent)) newSol (var-sub (apply-rule-map Sol) pos 0 subst)
         ]
 
-    (println newSol)
+    (println "pattern" newSol)
 
     (cond
 
        (>= st 4) nil
        :else
        (let [substSol (multi-level-subst newSol 0)]
-         (println substSol)
-         (gen-subsumption substSol accent subst (+ st 1))
+         (println "variation" substSol)
+         (distinct (cons substSol (gen-subsumption substSol accent subst (+ st 1))))
          )
-
-    )
-
-
+       )
     )
   )
 
-;(main '(num dhin . dhin num dhin . dhin) '(0 1 2 4 5 7) {'. '?p '(ta te) '?d '(te ta) '?d '(ta tum) '?d '(tum tum) '?d '(tum ta) '?d  'tum '?nA 'ta '?nA} )
+;(main '(num dhin . dhin num dhin . dhin) '(0 1 2 3 4 5 7) {'. '?p '(ta te) '?d '(te ta) '?d '(ta tum) '?d '(tum tum) '?d '(tum ta) '?d  'tum '?nA 'ta '?nA 'te '?nA} )
 
+(defn main [mSol comb subst]
 
-(defn main [mSol accent subst]
+  (cond
 
+   (empty? comb) nil
+   :else (let [accent (first comb) pos (sort (notChangeRule (distinct (concat (positions mSol) (nonAccentPos mSol accent 0 ) )) accent)) newSol (mriMap mSol)
+                                        ;(var-sub (apply-rule-map (mriMap mSol)) pos 0 subst)
+               ]
+                                        ;(println "main" pos newSol)
+           (let [ output (map apply-rule-map (distinct (concat (gen-subsumption newSol accent subst 0) (main mSol (rest comb) subst))))]
 
-  (let [ pos (sort (notChangeRule (distinct (concat (positions mSol) (nonAccentPos mSol accent 0 ) )) accent)) newSol (mriMap mSol)
-        ;(var-sub (apply-rule-map (mriMap mSol)) pos 0 subst)
-        ]
-    ;(println "main" pos newSol)
-    (gen-subsumption newSol accent subst 0)
+             (display (distinct output))
+             ;(println "length" (lengthList output 0))
 
-    )
+             )
+
+           )
+   )
 
   )
+
+
 ;; multiple points of variation in the groove
 ;; but ideally limit to 1 variation in a bar
 ;; certain sequence of variations imply a particlar build up whereas certain others are random
