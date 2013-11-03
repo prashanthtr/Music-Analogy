@@ -177,7 +177,7 @@
 
    (empty? doublehit) nil
    (not= (.indexOf accent (first doublehit)) -1 ) (notChangeRule (rest doublehit) accent )
-   (= (.indexOf accent (first doublehit)) -1 ) (cons (first doublehit) (notChangeRule (rest doublehit) accent ) )
+   :else (cons (first doublehit) (notChangeRule (rest doublehit) accent ) )
 
    )
 
@@ -300,14 +300,16 @@
     nil
     (if (= -1 ( .indexOf accent ctr))
 
+
       (cond
        (true? (resonant (first newsol ))) (cons ctr (nonAccentPos (rest newsol) accent (+ ctr 1) ) )
-       :else (nonAccentPos (rest newsol) accent (+ ctr 1) )
+       :else (cons ctr (nonAccentPos (rest newsol) accent (+ ctr 1) ))
        )
-      (nonAccentPos (rest newsol) accent (+ ctr 1) )
-      )
+      ;(cons ctr (nonAccentPos (rest newsol) accent (+ ctr 1) ) )
+       (nonAccentPos (rest newsol) accent (+ ctr 1) )
+       )
 
-    )
+      )
 
   )
 
@@ -796,7 +798,7 @@
        (and (variable hit ) (variable (charAtPos sol (+ st 1) 0)) (variable (charAtPos sol (+ st 2) 0)) )
        (let [third-sub (third-level-subst st)]
 
-         (println third-sub "triple subs")
+         ;(println third-sub "triple subs")
          ((ret-op third-sub ) third-sub (multi-level-subst sol (+ st 3) ))
 
          )
@@ -804,7 +806,7 @@
        (and (variable hit ) (variable (charAtPos sol (+ st 1) 0)) )
        (let [second-sub (double-level-subst st)]
 
-         (println second-sub "double subs")
+         ;(println second-sub "double subs")
          ((ret-op second-sub ) second-sub (multi-level-subst sol (+ st 2) ))
 
          )
@@ -812,7 +814,7 @@
        (variable hit)
        (let [first-sub (single-level-subst hit st)]
 
-         (println first-sub "single subs")
+         ;(println first-sub "single subs")
          (cons first-sub (multi-level-subst sol (+ st 1) ))
 
          )
@@ -875,12 +877,16 @@
     )
   )
 
+;(main '(num dhin . dhin num dhin . dhin) '(0 1 2 4 5 7) {'. '?p '(ta te) '?d '(te ta) '?d '(ta tum) '?d '(tum tum) '?d '(tum ta) '?d  'tum '?nA 'ta '?nA} )
+
+
 (defn main [mSol accent subst]
 
 
-  (let [ pos (sort (notChangeRule (distinct (concat (positions mSol) (nonAccentPos mSol accent 0 ) )) accent)) newSol (var-sub (apply-rule-map (mriMap mSol)) pos 0 subst)
+  (let [ pos (sort (notChangeRule (distinct (concat (positions mSol) (nonAccentPos mSol accent 0 ) )) accent)) newSol (mriMap mSol)
+        ;(var-sub (apply-rule-map (mriMap mSol)) pos 0 subst)
         ]
-
+    ;(println "main" pos newSol)
     (gen-subsumption newSol accent subst 0)
 
     )
