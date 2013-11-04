@@ -728,10 +728,24 @@
 
   )
 
+
+;; ta te followed by pause is awkard, hence is usually played with a tum
+(defn tatetumRule [ksol st]
+
+  (cond
+
+   (>= st (lengthList ksol 0)) nil
+   ( and (= '. (charAtPos ksol st 0) ) (= '(ta te) (charAtPos ksol (- st 1) 0) ) ) (cons (random-subst '(tum ta) 0) (tatetumRule ksol (+ st 1)) )
+   :else (cons (charAtPos ksol st 0) (tatetumRule ksol (+ st 1)) )
+   )
+
+
+  )
+
 ;;applies the physical constraints on a sol
 (defn apply-rule-map [ksol]
 
-  (tumteRule (doubleteta (cons (first ksol) (ruleDouble (first ksol) (first (rest ksol)) (rest ksol) ))) 0)
+  (tatetumRule (tumteRule (doubleteta (cons (first ksol) (ruleDouble (first ksol) (first (rest ksol)) (rest ksol) ))) 0) 0)
 
   )
 
@@ -745,9 +759,15 @@
 (defn single-level-subst [hit pos]
 
 
-  (list? hit) (random-subst '(tum (ta te)) pos)
-  (resonant hit) (random-subst '(tum (ta te)) pos)
-  :else (random-subst '(ta te (ta te)) pos)
+  (cond
+
+     (= pos 0) (random-subst '(tum ta te (ta te)) pos) ;;first position
+     (list? hit) (random-subst '(tum (ta te)) pos)
+     (resonant hit) (random-subst '(tum (ta te)) pos)
+     :else (random-subst '(ta te (ta te)) pos)
+
+
+   )
 
   )
 
@@ -756,7 +776,7 @@
   (cond
 
    (not= 0 pos) (random-subst '(((ta te) tum) ((ta te) (ta te)) (tum .)) pos)
-   :else (random-subst '((tum (ta te) ) (tum tum)) pos)
+   :else (random-subst '((tum (ta te) ) (tum tum) ((ta te) (ta te))) pos)
 
    )
 
@@ -820,7 +840,7 @@
        (and (variable hit ) (variable (charAtPos sol (+ st 1) 0)) )
        (let [second-sub (double-level-subst st)]
 
-         ;(println second-sub "double subs")
+         (println second-sub "double subs")
          ((ret-op second-sub ) second-sub (multi-level-subst sol (+ st 2) ))
 
          )
@@ -877,7 +897,7 @@
 
     (cond
 
-       (>= st 10) nil
+       (>= st 32) nil
        :else
        (let [substSol (multi-level-subst newSol 0)]
          (println "variation" substSol)
