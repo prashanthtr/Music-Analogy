@@ -45,10 +45,6 @@
   )
 
 
-
-
-
-
 ;; code that selects the positions to introduce double taps and the double tap to replace, It uses the above simple rules to adjust the subsequent notes in the generated double taps
 
 
@@ -729,6 +725,13 @@
   )
 
 
+(defn random-subst [list pos]
+
+  ( charAtPos list (rand-int (lengthList list 0 )) 0 )
+
+  )
+
+
 ;; ta te followed by pause is awkard, hence is usually played with a tum
 (defn tatetumRule [ksol st]
 
@@ -746,12 +749,6 @@
 (defn apply-rule-map [ksol]
 
   (tatetumRule (tumteRule (doubleteta (cons (first ksol) (ruleDouble (first ksol) (first (rest ksol)) (rest ksol) ))) 0) 0)
-
-  )
-
-(defn random-subst [list pos]
-
-  ( charAtPos list (rand-int (lengthList list 0 )) 0 )
 
   )
 
@@ -776,7 +773,7 @@
   (cond
 
    (not= 0 pos) (random-subst '(((ta te) tum) ((ta te) (ta te)) (tum .)) pos)
-   :else (random-subst '((tum (ta te) ) (tum tum) ((ta te) (ta te))) pos)
+   :else (random-subst '((tum (ta te) ) (tum tum) ((ta te) (ta te)) (tum .)) pos)
 
    )
 
@@ -786,8 +783,8 @@
 
   (cond
 
-   (not= 0 pos) (random-subst '(((ta te) (ta te) (ta te)) ((te ta) (te ta) (te ta)) ) pos)
-   :else (random-subst '((tum tum tum) (tum ta tum)) pos)
+   (not= 0 pos) (random-subst '(((ta te) (ta te) (ta te))  ((te ta) (te ta) (te ta)) ) pos)
+   :else (random-subst '((tum tum tum) (tum ta tum) ((te ta) (te ta) (te ta)) ((ta te) (ta te) (ta te))) pos)
 
    )
 
@@ -832,7 +829,7 @@
        (and (variable hit ) (variable (charAtPos sol (+ st 1) 0)) (variable (charAtPos sol (+ st 2) 0)) )
        (let [third-sub (third-level-subst st)]
 
-         (println third-sub "triple subs")
+         ;(println third-sub "triple subs")
          ((ret-op third-sub ) third-sub (multi-level-subst sol (+ st 3) ))
 
          )
@@ -840,7 +837,7 @@
        (and (variable hit ) (variable (charAtPos sol (+ st 1) 0)) )
        (let [second-sub (double-level-subst st)]
 
-         (println second-sub "double subs")
+         ;(println second-sub "double subs")
          ((ret-op second-sub ) second-sub (multi-level-subst sol (+ st 2) ))
 
          )
@@ -866,7 +863,7 @@
 (defn bar-improv [sol ctr]
 
 
-  (println sol)
+  ;(println sol)
   (cond
 
    (>= ctr 4) nil
@@ -893,14 +890,14 @@
   (let [ pos (sort (notChangeRule (distinct (concat (positions Sol) (nonAccentPos Sol accent 0 ) )) accent)) newSol (var-sub (apply-rule-map Sol) pos 0 subst)
         ]
 
-    (println "pattern" newSol)
+    ;(println "pattern" newSol)
 
     (cond
 
        (>= st 32) nil
        :else
        (let [substSol (multi-level-subst newSol 0)]
-         (println "variation" substSol)
+         ;(println "variation" substSol)
          (distinct (cons substSol (gen-subsumption substSol accent subst (+ st 1))))
          )
        )
@@ -920,7 +917,8 @@
                                         ;(println "main" pos newSol)
            (let [ output (map apply-rule-map (distinct (concat (gen-subsumption newSol accent subst 0) (main mSol (rest comb) subst))))]
 
-             (display (distinct output))
+             ;(display (distinct output))
+             (distinct output)
              ;(println "length" (lengthList output 0))
 
              )
@@ -929,6 +927,24 @@
    )
 
   )
+
+
+(defn collectingData [mSol comb subst st]
+
+
+  (cond
+
+   (>= st 20) nil
+   :else (distinct (concat (main mSol comb subst) (collectingData mSol comb subst (+ st 1))  )  )
+   )
+
+  )
+
+
+;; TA followed BY A PAUSE? - tum very low loudness(high loudness) (forced choice -> 0 low else noatural loudness)
+
+;; douuble ta does not come in the end of the bar, prev ta replaced by tum or .
+
 
 
 ;; multiple points of variation in the groove
@@ -955,3 +971,360 @@
 ;; non accented could stay as a non accented hit in the single substitution, in which case an adjacent pause is not added to it, however, if the non accented hit is replaced by a double hit , then a pause/nA/accented could combine with it in the second level of substitution and form a second variation to which another nA hit could add on.
 
 ;; it is like a chain reaction, the first intrusion into the lead's pattern is the tricky part. after that, it leads to a chain of merging and changing and substituion by repeatedly adding on nearby hits to the substitutions and finally building up to conclude the improv cycle.
+
+
+;; typesetting to check at the same position different possiblities
+;; check single substitutions at different positions
+;; check double, triple substitutions at different positions
+;; at the moment excel ?
+
+
+;; tum at the end is always followed by a pause
+;; or else tum is replaced by a ta
+
+; tum followed by pause , followed by a "ta" or "te" - no generalization
+
+
+
+
+;(main '(num the dhin dhin the dhin dhin the) '((1 2 3 4 5 6 7)) {'. '?p '(ta te) '?d '(te ta) '?d '(ta tum) '?d '(tum tum) '?d '(tum ta) '?d  'tum '?nA 'ta '?nA 'te '?nA} )
+                                        ;
+
+                                        ;1
+
+
+I am looking at variations of the groove / discretionary choices, that can be played in the different bars in the improv cycle. These are either played in a specific order, or at any random order.
+
+I have also assumed that loudness and pitch bending of hits are pre-fixed for each of the choices that I have included. The rules for matching them have to be decided by listening.
+
+
+
+
+
+'(((ta te) ta tum tum ta tum tum ta)
+(tum ta tum tum ta tum tum ta)
+(te ta tum tum ta tum tum ta)
+(ta ta tum tum ta tum tum ta)
+
+;1 and 2
+
+(tum tum tum tum ta tum tum ta)
+(tum . tum tum ta tum tum ta)
+(tum (ta te) ta tum ta tum tum ta)
+((ta te) (ta te) ta tum ta tum tum ta)
+(tum . ta tum ta tum tum ta)
+(tum tum ta tum ta tum tum ta)
+
+;1 and 3
+
+(ta ta ta tum ta tum tum ta)
+(tum ta ta tum ta tum tum ta)
+(te ta ta tum ta tum tum ta)
+(te ta (ta te) ta ta tum tum ta)
+(te ta te ta ta tum tum ta)
+(ta ta ta ta ta tum tum ta)
+(tum ta (ta te) ta ta tum tum ta)
+((ta te) ta (ta te) ta ta tum tum ta)
+(tum ta te ta ta tum tum ta)
+(ta ta te ta ta tum tum ta)
+(te ta ta ta ta tum tum ta)
+((ta te) ta te ta ta tum tum ta)
+(tum ta ta ta ta tum tum ta)
+((ta te) ta ta ta ta tum tum ta)
+
+
+;1 and 4
+
+
+(te ta tum tum ta tum tum ta)
+((ta te) ta tum (ta te) ta tum tum ta)
+(te ta tum ta ta tum tum ta)
+(te ta tum (ta te) ta tum tum ta)
+(tum ta tum ta ta tum tum ta)
+(ta ta tum tum ta tum tum ta)
+(ta ta tum ta ta tum tum ta)
+(tum ta tum (ta te) ta tum tum ta)
+((ta te) ta tum tum ta tum tum ta)
+(ta ta tum (ta te) ta tum tum ta)
+((ta te) ta tum ta ta tum tum ta)
+
+
+;1 and 5
+
+
+(tum ta tum tum (ta te) ta tum ta)
+(ta ta tum tum (ta te) ta tum ta)
+(tum ta tum tum tum ta tum ta)
+(tum ta tum tum ta ta tum ta)
+(te ta tum tum tum ta tum ta)
+(ta ta tum tum tum ta tum ta)
+((ta te) ta tum tum (ta te) ta tum ta)
+(te ta tum tum ta ta tum ta)
+((ta te) ta tum tum ta ta tum ta)
+((ta te) ta tum tum tum ta tum ta)
+(te ta tum tum (ta te) ta tum ta)
+(ta ta tum tum ta ta tum ta)
+
+;1 and 6
+
+
+((ta te) ta tum tum ta (ta te) ta ta)
+(tum ta tum tum ta te ta ta)
+((ta te) ta tum tum ta te ta ta)
+(ta ta tum tum ta ta ta ta)
+(tum ta tum tum ta ta ta ta)
+(ta ta tum tum ta (ta te) ta ta)
+(te ta tum tum ta ta ta ta)
+((ta te) ta tum tum ta ta ta ta)
+(tum ta tum tum ta (ta te) ta ta)
+(te ta tum tum ta te ta ta)
+(ta ta tum tum ta te ta ta)
+
+;1 and 7
+
+
+(te ta tum tum ta tum ta ta)
+((ta te) ta tum tum ta tum tum ta)
+(tum ta tum tum ta tum (ta te) ta)
+(ta ta tum tum ta tum ta ta)
+(tum ta tum tum ta tum ta ta)
+((ta te) ta tum tum ta tum (ta te) ta)
+(te ta tum tum ta tum tum ta)
+(ta ta tum tum ta tum tum ta)
+(ta ta tum tum ta tum (ta te) ta)
+((ta te) ta tum tum ta tum ta ta)
+(tum ta tum tum ta tum tum ta)
+
+
+;1 and 8
+
+((ta te) ta tum tum ta tum tum (ta te))
+(tum ta tum tum ta tum tum (ta te))
+(tum ta tum tum ta tum tum ta)
+(ta ta tum tum ta tum tum (ta te))
+(te ta tum tum ta tum tum tum)
+((ta te) ta tum tum ta tum tum tum)
+(tum ta tum tum ta tum tum tum)
+((ta te) ta tum tum ta tum tum ta)
+(ta ta tum tum ta tum tum ta)
+(te ta tum tum ta tum tum ta)
+(ta ta tum tum ta tum tum tum)
+
+
+;1, 2 and 3
+
+
+(tum tum tum tum ta tum tum ta)
+((ta te) (ta te) (ta te) ta ta tum tum ta)
+((te ta) (te ta) (te ta) tum ta tum tum ta)
+(tum ta tum ta ta tum tum ta)
+(tum tum tum ta ta tum tum ta)
+(tum ta tum tum ta tum tum ta)
+ )
+
+
+;some of these combinations are valid, others are not, what really distinguishes them
+
+
+
+(
+;pos 1 combianations:
+
+ (ta tum . ta tum tum . ta)      V
+ ((ta te) ta . ta tum tum . ta)  NOT SURE
+ (tum ta . ta tum tum . ta)      V
+ (ta ta . ta tum tum . ta)       NOT SURE
+ (te ta . ta tum tum . ta)       NOT SURE
+ (tum tum . ta tum tum . ta)     V
+
+
+;; pos 1 and 2
+
+(tum tum . tum tum tum . tum)         V
+(tum (ta te) ta tum tum tum . tum)    V
+(tum . tum tum tum tum . tum)         V
+(tum . ta tum tum tum . tum)          V
+(tum tum ta tum tum tum . tum)        V
+((ta te) (ta te) ta tum tum tum . tum)V
+
+
+
+;; pos 1 and 3
+
+(ta tum tum tum tum tum . tum)        V
+(tum tum (ta te) ta tum tum . tum)    NOT SURE
+(ta tum (ta te) ta tum tum . tum)     V
+(tum tum tum ta tum tum . tum)        V
+(ta tum ta ta tum tum . tum)          V
+((ta te) ta (ta te) ta tum tum . tum) NOT COMMON AS GROOVE
+((ta te) ta ta ta tum tum . tum)      NOT COMMON AS GROOVE
+(ta ta ta ta tum tum . tum)           NOT SURE
+(ta ta (ta te) ta tum tum . tum)      NOT COMMON AS GROOVE
+(tum ta ta ta tum tum . tum)          NOT SURE
+(tum ta te ta tum tum . tum)          V
+(tum ta (ta te) ta tum tum . tum)     NOT SURE
+(te ta ta ta tum tum . tum)           V
+(ta ta te ta tum tum . tum)           V
+(te ta (ta te) ta tum tum . tum)      NOT COMMON AS GROOVE
+
+;pos 1 and 4
+
+((ta te) ta . (ta te) ta tum . tum)  V
+((ta te) ta . ta ta tum . tum)       V
+(tum ta . (ta te) ta tum . tum)      V
+(tum ta . te ta tum . tum)           V
+(tum ta . ta ta tum . tum)           V
+(ta ta . te ta tum . tum)            V
+(te ta . te ta tum . tum)            V
+(ta ta . (ta te) ta tum . tum)       V - ALTERNATES WITH PREV
+(te ta . (ta te) ta tum . tum)       V - ALTERNATES WITH PREV
+(ta ta . ta ta tum . tum)            V - ALTERANTES WITH NEXT
+(te ta . ta ta tum . tum)            V - ALTERNATES WITH PREV
+(tum tum . (ta te) ta tum . tum)     V
+((ta te) ta . te ta tum . tum)       NOT SURE
+
+
+;;pos 1 and 5
+
+(ta tum . tum ta tum . tum)        V
+((ta te) ta . tum ta tum . tum)    V
+(tum ta . tum (ta te) ta . tum)    V - WITHOUT PAUSES
+(tum ta . tum ta ta . tum)         V - WITHOUT PAUSES
+((ta te) ta . tum (ta te) ta . tum) NOT COMMON AS GROOVE
+(ta ta . tum tum ta . tum)         V
+(ta ta . tum (ta te) ta . tum)     V - WITHOUT PAUSES
+(te ta . tum tum ta . tum)         V - WITHOUT PAUSES
+(ta ta . tum ta ta . tum)          V
+(te ta . tum (ta te) ta . tum)     V- WITHOUT PAUSES
+((ta te) ta . tum ta ta . tum)     V- WITHOUT PAUSES
+(tum ta . tum tum ta . tum)        V
+(te ta . tum ta ta . tum)          V - WITHOUT PAUSES ?
+(tum tum . tum tum tum . tum)      V
+
+
+;pos 1 and 6
+
+(tum tum . tum tum tum . tum)     V
+(tum tum . tum tum ta . tum)
+((ta te) ta . tum tum (ta te) tum tum) NOT SURE
+((ta te) ta . tum tum (ta te) ta tum)  NOT SURE
+(te ta . tum tum (ta te) ta tum)       V - WITHOUT PAUSES
+(tum ta . tum tum tum ta tum)          V - WITHOUT PAUSES
+((ta te) ta . tum tum tum ta tum)      V - WITHOUT PAUSES
+(tum ta . tum tum (ta te) ta tum)      NOT SURE
+(ta ta . tum tum (ta te) ta tum)       NOT SURE
+(ta ta . tum tum ta ta tum)            V - WITH SYMMETRY
+(ta ta . tum tum tum ta tum)           V - WITH SYMMETRY
+(te ta . tum tum ta ta tum)            V - WITH SYMMETRICAL PAUSES
+((ta te) ta . tum tum ta ta tum)       V - WITH SYMMETRY
+(tum ta . tum tum ta ta tum)           V - WITH SYMMETRY
+(te ta . tum tum tum ta tum)
+(ta tum . tum tum (ta te) ta tum)      V - SECOND PART SWITCHED WITH FIRST
+(tum tum . tum tum ta ta tum)          V
+((ta te) ta . tum tum ta . tum)        V - WITHOUT PAUSES
+(tum ta . tum tum ta . tum)            V - WITHOUT PAUSES
+(ta ta . tum tum ta . tum)             V
+(tum ta . tum tum tum . tum)           V - WITHOUT PAUSES
+(te ta . tum tum ta . tum)             V
+(te ta . tum tum ta tum tum)           V
+
+
+
+;;pos 1 and 7
+
+(ta tum . tum tum tum tum tum)
+(ta tum . tum tum tum ta tum)
+(ta tum . tum tum tum (ta te) ta)
+((ta te) ta . tum tum tum (ta te) ta)
+(te ta . tum tum tum tum ta)
+(tum ta . tum tum tum tum ta)
+(te ta . tum tum tum ta ta)
+(ta ta . tum tum tum tum ta)
+(ta ta . tum tum tum (ta te) ta)
+(tum ta . tum tum tum (ta te) ta)
+((ta te) ta . tum tum tum tum ta)
+(tum ta . tum tum tum ta ta)
+((ta te) ta . tum tum tum ta ta)
+((ta te) ta . tum tum tum ta tum)
+(te ta . tum tum tum (ta te) ta)
+(ta ta . tum tum tum ta ta)
+(tum tum . tum tum tum ta tum)       V - SYMMETRY
+(ta tum . tum tum tum tum ta)
+
+
+;pos 1 and 8
+
+(ta tum . tum tum tum . (ta te))   V
+(tum tum . tum tum tum . te)       V
+((ta te) ta . tum tum tum . ta)    NOT COMMON AS GROOVE
+((ta te) ta . tum tum tum . (ta te)) V
+(tum ta . tum tum tum . (ta te))     NOT COMMON AS GROOVE
+(te ta . tum tum tum . ta)           V
+((ta te) ta . tum tum tum . te)      NOT SO COMMON AS GROOVE
+(te ta . tum tum tum . te)
+(ta ta . tum tum tum . te)           NOT SO COMMON
+(ta ta . tum tum tum . ta)           V
+(te ta . tum tum tum . (ta te))      NOT SO COMMON
+(tum ta . tum tum tum . ta)         V - ALTERNATES
+(ta ta . tum tum tum . (ta te))     V
+(tum tum . tum tum tum . (ta te))   V
+(ta tum . tum tum tum . ta)         V
+(tum tum . tum tum tum . ta)        V
+(tum ta . tum tum tum . te)         NOT SURE
+
+
+;pos 2 combinations
+
+(tum tum . ta tum tum . ta)
+(tum ta . ta tum tum . ta)
+(tum (ta te) tum ta tum tum . ta)
+(tum ta ta ta tum tum . ta)
+(tum tum ta ta tum tum . ta)
+(tum (ta te) ta ta tum tum . ta)
+(tum ta tum ta tum tum . ta)
+(tum tum tum ta tum tum . ta)
+
+;pos 3 combinations
+
+(tum tum tum ta tum tum . ta)
+(tum tum (ta te) ta tum tum . ta)
+(tum tum ta ta tum tum . ta)
+
+;pos 4
+
+(tum tum . ta tum tum . ta)
+(tum tum . (ta te) ta tum . ta)
+(tum tum . te ta tum . ta)
+(tum tum . ta ta tum . ta)
+
+;pos 5
+
+(tum tum . ta (ta te) ta . ta)
+(tum tum . ta te ta . ta)
+(tum tum . ta ta ta . ta)
+(tum tum . ta ta tum . ta)
+
+;pos 6
+
+(tum tum . ta tum (ta te) ta ta)
+(tum tum . ta tum ta ta ta)
+(tum tum . ta tum tum ta ta)
+(tum tum . ta tum ta . ta)
+(tum tum . ta tum (ta te) tum ta)
+(tum tum . ta tum ta tum ta)
+(tum tum . ta tum tum tum ta)
+(tum tum . ta tum tum . ta)
+
+;pos 7
+
+(tum tum . ta tum tum (ta te) ta)
+(tum tum . ta tum tum ta ta)
+(tum tum . ta tum tum tum ta)
+
+;pos 8
+
+(tum tum . ta tum tum . te)
+(tum tum . ta tum tum . ta)
+(tum tum . ta tum tum . (ta te))
+
+)
