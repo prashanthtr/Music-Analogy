@@ -942,8 +942,8 @@
 
 
 ;; TA followed BY A PAUSE? - tum very low loudness(high loudness) (forced choice -> 0 low else noatural loudness)
-
 ;; douuble ta does not come in the end of the bar, prev ta replaced by tum or .
+
 
 
 
@@ -992,12 +992,43 @@
 
                                         ;1
 
+In terms of an update, I have refined some of the physical constraints and added some genre-performance constraints. I feel that with the current rules, pretty much most of the combiantions generated are valid to some extent ( though I need to check if I am cutting out any exploration space)
+
+but this is still at the first level of selection. The second level of selection is from the actual set of refined patterns and I have not gotten to it yet.
+
+Right now I have a system that lets me add new substitutions to each of single, double, triple hits and generate valid combinations of grooves from that.
+
+For each of the substitutions, I have also assumed that loudness and pitch bending of hits are pre-fixed for each of the choices that I have included. HOwever, while actually interacting with the other hits, there might be emergent rules that change the loudness, pitch bending for these strokes.  The rules for matching them have to be decided by listening, which is hopefully in the next two days.
+
+idea for selecting from the combinations:
+match loudness contour with existing contour??
+
+Step 1: -- if it is the same groove, because the I interpreted some of the variation groove, was different from the actual groove ( could lead to complementarity too)
+
+Step2: Same grooves -> variations
+Step3: Comeplementary grooves -> entire bar has to complementary (repeat)
+
+Certain variations that change the groove, certain that preserve,
+
+questions:
+
+What is more important priority?
+
+Actual selection using loudness,( or any other criteria)
 
 I am looking at variations of the groove / discretionary choices, that can be played in the different bars in the improv cycle. These are either played in a specific order, or at any random order.
 
-I have also assumed that loudness and pitch bending of hits are pre-fixed for each of the choices that I have included. The rules for matching them have to be decided by listening.
+grooves that are not so distinct because of a "ta" "te" interchange
 
+right now, impose loudness contour, prefixed pitch bending on the generated hits
 
+social performance constraints -- bar activity?
+
+pitch bending - how certain kinds of pitch bending are possible and certain are not?
+
+Generate progressive varitions:
+max of 4 variations
+progresive variations? - how does it progressivly vary?
 
 
 

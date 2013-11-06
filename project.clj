@@ -5,4 +5,6 @@
             :url "http://www.eclipse.org/legal/epl-v10.html"}
   :dependencies [[org.clojure/clojure "1.5.1"]
                  [org.clojars.jhowarth/clojure-contrib "1.2.0-RC3"]
+                 [clojurewerkz/quartzite "1.1.0"]
+                 [overtone "0.8.1"]
                  ])
