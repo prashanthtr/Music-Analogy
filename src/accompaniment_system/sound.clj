@@ -42,8 +42,6 @@
   )
 
 
-
-
 (defn solToLoudness [sol pos]
 
   (let [addnLoudness (cond
@@ -81,32 +79,46 @@
 
   )
 
+
+(defn play-sample
+  [samp time vol]
+  (at time (stereo-player samp :vol vol)))
+
+
 (defn newSol []
 
   ;(println "newsol")
-  (random-subst  '((ta . tum . tum . ta . ta . tum . tum . ta .)
-    (ta . tum . tum . ta ta ta . tum . tum . ta .)
-    ))
+  ;(random-subst  '((ta . tum . tum . ta . ta . tum . tum . ta .)
+                   ;(ta . tum . tum . ta ta ta . tum . tum . ta .)
+                   ;))
+(random-subst  '((ta tum tum ta ta tum tum ta)
+                   (ta tum . ta ta tum . ta)
+                   ))
   )
 
 ; this function will play our sound at whatever tempo we've set our metronome to
-(defn looper [nome sol]
+(defn looper [nome sol vol]
 
   (if (empty? sol)
 
-    (let [beat (nome) sol (newSol) ]
+    (let [beat (nome) sol (newSol) vol (solToLoudness sol 0) ]
 
       ;(println "sol" sol)
-      (at (nome beat) (ret-sound (first sol)) )
-      (apply-at (nome (inc beat)) looper nome (rest sol) [])
+      (at (nome beat) (play-sample (ret-sound (first sol)) 10 (first vol) )
+          ;(stereo-player  :vol (first vol) )
+          )
+      (apply-at (nome (inc beat)) looper nome (rest sol) (rest vol) [])
 
       )
 
     (let [beat (nome) ]
 
       ;(println "sol2" sol)
-      (at (nome beat) (ret-sound (first sol)) )
-      (apply-at (nome (inc beat)) looper nome (rest sol) [])
+      ;(at (nome beat) (ret-sound (first sol)) )
+      (at (nome beat) (play-sample (ret-sound (first sol)) 10 (first vol) )
+          ;(stereo-player (ret-sound (first sol)) :vol (first vol) )
+          )
+      (apply-at (nome (inc beat)) looper nome (rest sol) (rest vol) [])
 
       )
 
@@ -116,10 +128,8 @@
 
 ; implement the latest rules
 
-;; figure out volume representation
-;; formula to compare forced and existing volume of substitutions and then,
-;; select from among the 60.
 
+;; select the suitable ones from among the 60.
 
 
 
