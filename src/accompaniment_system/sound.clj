@@ -4,8 +4,8 @@
 
     (cond
 
-     (= 'tum sol) (tum)
-     (= 'ta sol) (ta)
+     (= 'tum sol) tum
+     (= 'ta sol) ta
      :else nil
      )
 
@@ -103,21 +103,30 @@
 
     (let [beat (nome) sol (newSol) vol (solToLoudness sol 0) ]
 
+      (if (= '. (first sol))
       ;(println "sol" sol)
-      (at (nome beat) (play-sample (ret-sound (first sol)) 10 (first vol) )
+        nil
+        (at (nome beat) (play-sample (ret-sound (first sol)) 1 (first vol) )
           ;(stereo-player  :vol (first vol) )
           )
-      (apply-at (nome (inc beat)) looper nome (rest sol) (rest vol) [])
 
+      )
+      (apply-at (nome (inc beat)) looper nome (rest sol) (rest vol) [])
       )
 
     (let [beat (nome) ]
 
       ;(println "sol2" sol)
-      ;(at (nome beat) (ret-sound (first sol)) )
-      (at (nome beat) (play-sample (ret-sound (first sol)) 10 (first vol) )
+                                        ;(at (nome beat) (ret-sound (first sol)) )
+      (if (= '. (first sol))
+
+        nil
+        (at (nome beat) (play-sample (ret-sound (first sol)) 1 (first vol) )
           ;(stereo-player (ret-sound (first sol)) :vol (first vol) )
           )
+
+        )
+
       (apply-at (nome (inc beat)) looper nome (rest sol) (rest vol) [])
 
       )
@@ -125,7 +134,6 @@
     )
 
   )
-
 ; implement the latest rules
 
 
