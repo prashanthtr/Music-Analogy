@@ -340,13 +340,13 @@
 
   )
 
-;;power given a base
+;;apower given a base
 
-(defn pow [base exp st acc]
+(defn apow [base exp st acc]
 
   (cond
 
-   (< st exp) (pow base exp (+ st 1) (* acc base))
+   (< st exp) (apow base exp (+ st 1) (* acc base))
    :else acc
    )
 
@@ -355,7 +355,7 @@
 ;;corrects the binary conversion by appending zeroes in front
 (defn correctBinary [arr bin]
 
-    ( let [max (lengthList (binary (- (pow 2 (lengthList arr 0) 0 1) 1)) 0)]
+    ( let [max (lengthList (binary (- (apow 2 (lengthList arr 0) 0 1) 1)) 0)]
 
       (cond
 
@@ -471,7 +471,7 @@
 (defn combination [st subst sol ksol pos]
 
   (cond
-   (< st (pow 2 (lengthList pos 0) 0 1))
+   (< st (apow 2 (lengthList pos 0) 0 1))
 
    (let [ newSol (doublete (fill ksol 0 pos (interpret (correctBinary pos (reverse (binary st)) ) subst sol 0 )) ) ]
 
@@ -546,7 +546,7 @@
   )
 
 ;; returns single and double substitutions possible -- including () no substitution
-(defn powerset [perm-sol]
+(defn apowerset [perm-sol]
 
   (let [substitutions  (concat '(()) (combinations perm-sol 1) (concat (combinations perm-sol 2)  (map reverse (combinations perm-sol 2)) (samemap perm-sol) )
                                )]
@@ -590,7 +590,7 @@
 
 (defn gen [mSol Sol accent subst]
 
-  (let [ pos (sort (notChangeRule (distinct (concat (positions mSol) (nonAccentPos mSol accent 0 ) )) accent)) newSol (doubletap mSol Sol pos 0 subst) cartprod (cartesian-product (powerset '(ta te tum)) (powerset '(ta te tum)))
+  (let [ pos (sort (notChangeRule (distinct (concat (positions mSol) (nonAccentPos mSol accent 0 ) )) accent)) newSol (doubletap mSol Sol pos 0 subst) cartprod (cartesian-product (apowerset '(ta te tum)) (apowerset '(ta te tum)))
         ;(cartesian-product (subsets '(ta te tum)) (subsets '(ta te tum)) )
         ]
     ; (improv-choice improv (doubletap mSol Sol pos 0 subst) 0)
