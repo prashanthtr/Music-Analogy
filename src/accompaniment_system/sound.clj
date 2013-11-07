@@ -3,7 +3,7 @@
 
 (defn ret-sound [sol]
 
-  (let [randomN (rand-int 2) kick (sample (freesound-path 2086)) tum (sample "src/accompaniment_system/audio/tum.wav" ) ta (sample "src/accompaniment_system/audio/ta.wav" ) nam (sample "src/accompaniment_system/audio/num.wav" ) dhin (sample "src/accompaniment_system/audio/dhin.wav" ) the (sample "src/accompaniment_system/audio/thi.wav" ) ]
+  (let [randomN (rand-int 2) kick (sample (freesound-path 2086)) tum (sample "src/accompaniment_system/audio/tum.wav" ) ta (sample "src/accompaniment_system/audio/ta.wav" ) nam (sample "src/accompaniment_system/audio/num.wav" ) dhin (sample "src/accompaniment_system/audio/dhin.wav" ) the (sample "src/accompaniment_system/audio/thi.wav" ) te (sample "src/accompaniment_system/audio/te.wav" ) ]
 
     (cond
 
@@ -12,6 +12,7 @@
      (= 'nam sol) nam
      (= 'dhin sol) dhin
      (= 'the sol) the
+     (= 'te sol) te
      :else nil
      )
 
@@ -37,7 +38,7 @@
      (= 'te hit) (cons (+ addnLoudness 0.8) (solToLoudness sol (+ pos 1)) )
      (= '(ta te) hit) (cons 0.3 (solToLoudness sol (+ pos 1)) )
      (= '(te te) hit) (cons 1 (solToLoudness sol (+ pos 1)) )
-      (= '(te ta) hit) (cons 0.3 (solToLoudness sol (+ pos 1)) )
+     (= '(te ta) hit) (cons 0.3 (solToLoudness sol (+ pos 1)) )
      (= '(ta tum) hit) (cons 0.6 (solToLoudness sol (+ pos 1)) )
      (= '(tum ta) hit) (cons 0.6 (solToLoudness sol (+ pos 1)) )
      (= '(tu tum) hit) (cons 0.75 (solToLoudness sol (+ pos 1)) )
@@ -243,38 +244,119 @@
 
   )
 
+;(looper (metronome 200) (repToSound (mriMap '(nam the dhin dhin the dhin dhin (nam the)))) (selectPlay '(nam the dhin dhin the dhin dhin (nam the))) '(0.9 0 0.3 0 0.5 0 1 0 0.25 0 0.5 0 1 0 0.5 0.5) 0 0 )
+
+
+
+(defn soundToRep [sol pos]
+
+  ;(println sol)
+  (cond
+
+   (>= pos (- (lengthList sol 0) 1)) nil ;(do (println "term") nil)
+   :else (cond
+
+          (and (= '. (charAtPos sol pos 0)) (= '. (charAtPos sol (+ pos 1) 0))) (cons '. (soundToRep sol (+ pos 2)))
+          (and  (not= '. (charAtPos sol pos 0)) (= '. (charAtPos sol (+ pos 1) 0))) (cons (charAtPos sol pos 0) (soundToRep sol (+ pos 2)))
+          (and (not= '. (charAtPos sol pos 0)) (not= '. (charAtPos sol (+ pos 1) 0))) (cons (list (charAtPos sol pos 0) (charAtPos sol (+ pos 1) 0)) (soundToRep sol (+ pos 2) ))
+          )
+   )
+
+  )
+
+(defn repToSound [sol]
+
+
+  (println sol)
+  (cond
+   (= nil (first sol)) nil
+   (empty? sol) nil
+   (not (list? (first sol))) (concat (list (first sol) '.) (repToSound (rest sol)))
+   :else (concat (list (first (first sol)) (first (rest (first sol)))) (repToSound (rest sol)))
+   )
+
+  )
+
+(defn selectPlay [mridangam]
+
+  (let [mri (main mridangam '(1) {'. '?p '(ta te) '?d '(te ta) '?d '(ta tum) '?d '(tum tum) '?d '(tum ta) '?d  'tum '?nA 'ta '?nA 'te '?nA} ) ]
+    mri
+    )
+
+  )
 
 ; this function will play our sound at whatever tempo we've set our metronome to
-(defn looper [nome sol vol st]
+(defn looper [nome sol solList vol st bar]
+
+
+   (if (>= bar (lengthList solList 0))
+
+    (let [bar 0 sol (repToSound (first solList))]
+
+      (if (>= st (lengthList sol 0))
+
+        (let [beat (nome) st 0]
+
+          (if (= '. (charAtPos sol st 0))
+                                        ;(println "sol" sol)
+            nil
+            (at (nome beat) (play-sample (ret-sound (charAtPos sol st 0) ) 1 (charAtPos vol st 0)  )
+                )
+            )
+          (apply-at (nome (inc beat)) looper nome sol solList vol (inc st) bar [])
+          )
+        )
+
+      (let [beat (nome) ]
+
+                                        ;(at (nome beat) (ret-sound (first sol)) )
+        (if (= '. (charAtPos sol st 0))
+
+          nil
+          (at (nome beat) (play-sample (ret-sound (charAtPos sol st 0)) 1 (charAtPos vol st 0) )
+                                        ;(stereo-player (ret-sound (first sol)) :vol (first vol) )
+              )
+
+          )
+
+        (apply-at (nome (inc beat)) looper nome sol solList vol (inc st) bar [])
+
+        )
+
+
+      )
+
 
   (if (>= st (lengthList sol 0))
 
-    (let [beat (nome) st 0]
+      (let [beat (nome) st 0 bar (+ bar 1) sol (repToSound (charAtPos solList bar 0))]
 
-      (if (= '. (charAtPos sol st 0))
-      ;(println "sol" sol)
-        nil
-        (at (nome beat) (play-sample (ret-sound (charAtPos sol st 0) ) 1 (charAtPos vol st 0)  )
-            )
+        (if (= '. (charAtPos sol st 0))
+                                        ;(println "sol" sol)
+          nil
+          (at (nome beat) (play-sample (ret-sound (charAtPos sol st 0) ) 1 (charAtPos vol st 0)  )
+              )
 
+          )
+        (apply-at (nome (inc beat)) looper nome sol solList vol (inc st) bar [])
         )
-      (apply-at (nome (inc beat)) looper nome sol vol (inc st) [])
-      )
 
-    (let [beat (nome) ]
+      (let [beat (nome) ]
 
-      ;(println "sol2" sol)
+                                        ;(println "sol2" sol)
                                         ;(at (nome beat) (ret-sound (first sol)) )
-      (if (= '. (charAtPos sol st 0))
+        (if (= '. (charAtPos sol st 0))
 
-        nil
-        (at (nome beat) (play-sample (ret-sound (charAtPos sol st 0)) 1 (charAtPos vol st 0) )
-          ;(stereo-player (ret-sound (first sol)) :vol (first vol) )
+          nil
+          (at (nome beat) (play-sample (ret-sound (charAtPos sol st 0)) 1 (charAtPos vol st 0) )
+                                        ;(stereo-player (ret-sound (first sol)) :vol (first vol) )
+              )
+
           )
 
-        )
+        (apply-at (nome (inc beat)) looper nome sol solList vol (inc st) bar [])
 
-      (apply-at (nome (inc beat)) looper nome sol vol (inc st) [])
+       )
 
       )
 
@@ -282,9 +364,21 @@
 
   )
 
-(looper (metronome 150) '(nam the dhin dhin the dhin dhin the) '(0.9 0.3 0.5 1 0.25 0.5 1 0.5) 0 )
 
-(looper (metronome 150) '(tum ta tum tum ta tum tum ta) '(0.9 0.3 0.5 1 0.25 0.5 1 0.5) 0 )
+;(looper (metronome 200) (repToSound '(nam the dhin dhin the dhin dhin (nam the))) (list '(nam the dhin dhin the dhin dhin (nam the))) '(0.9 0 0.3 0 0.5 0 1 0 0.25 0 0.5 0 1 0 0.5 0.5) 0 0 )
+
+
+;(looper (metronome 200) (repToSound (mriMap '(nam the dhin dhin the dhin dhin (nam the)))) (selectPlay '(nam the dhin dhin the dhin dhin (nam the))) '(0.9 0 0.3 0 0.5 0 1 0 0.25 0 0.5 0 1 0 0.5 0.5) 0 0 )
+
+
+
+
+;(cons  ((charAtPos sol (+ pos 1) 0)))
+
+;(looper (metronome 200) '(nam . the . dhin . dhin . the . dhin . dhin . nam the) '(0.9 0 0.3 0 0.5 0 1 0 0.25 0 0.5 0 1 0 0.5 0.5) 0 )
+
+;(looper (metronome 200) (mriMap '(nam . the . dhin . dhin . the . dhin . dhin . nam the)) '(0.9 0 0.3 0 0.5 0 1 0 0.25 0 0.5 0 1 0 0.5 0.5) 0 )
+
 
 
 

@@ -697,7 +697,7 @@
       (empty? mSol) nil
       (= '. (first mSol)) '.
       (or (= 'num (first mSol) ) (= 'dham (first mSol) ) (= 'dhin (first mSol) ) (= 'dheem (first mSol) )) 'tum
-      (list? (first mSol)) '(te ta) ;;choice between te ta, tum ta and ta te
+      (list? (first mSol)) '(ta te) ;;choice between te ta, tum ta and ta te
       :else 'ta
       )
 
@@ -758,12 +758,10 @@
 
   (cond
 
-     (= pos 0) (random-subst '(tum ta te (ta te)) pos) ;;first position
-     (list? hit) (random-subst '(tum (ta te)) pos)
-     (resonant hit) (random-subst '(tum (ta te)) pos)
-     :else (random-subst '(ta te (ta te)) pos)
-
-
+   (= pos 0) (random-subst '(tum ta te (ta te)) pos) ;;first position
+   (list? hit) (random-subst '(tum (ta te) .) pos)
+   (resonant hit) (random-subst '(tum (ta te) .) pos)
+   :else (random-subst '(ta te (ta te) .) pos)
    )
 
   )
@@ -887,18 +885,20 @@
 (defn gen-subsumption [Sol accent subst st]
 
 
-  (let [ pos (sort (notChangeRule (distinct (concat (positions Sol) (nonAccentPos Sol accent 0 ) )) accent)) newSol (var-sub (apply-rule-map Sol) pos 0 subst)
+  (let [ pos (sort (positions Sol) ) newSol (var-sub (apply-rule-map Sol) pos 0 subst)
         ]
 
+    ;(notChangeRule (distinct (concat (positions Sol) (nonAccentPos Sol accent 0 ) )) accent)
     ;(println "pattern" newSol)
 
     (cond
 
-       (>= st 32) nil
+       (>= st 3) nil
        :else
        (let [substSol (multi-level-subst newSol 0)]
          ;(println "variation" substSol)
-         (distinct (cons substSol (gen-subsumption substSol accent subst (+ st 1))))
+         ;(distinct )
+         (cons substSol (gen-subsumption substSol accent subst (+ st 1)))
          )
        )
     )
@@ -911,14 +911,15 @@
   (cond
 
    (empty? comb) nil
-   :else (let [accent (first comb) pos (sort (notChangeRule (distinct (concat (positions mSol) (nonAccentPos mSol accent 0 ) )) accent)) newSol (mriMap mSol)
+   :else (let [accent (first comb) pos (sort (positions mSol) ) newSol (mriMap mSol)
                                         ;(var-sub (apply-rule-map (mriMap mSol)) pos 0 subst)
+               ;(notChangeRule (distinct (concat (positions mSol) (nonAccentPos mSol accent 0 ) )) accent)
                ]
                                         ;(println "main" pos newSol)
-           (let [ output (map apply-rule-map (distinct (concat (gen-subsumption newSol accent subst 0) (main mSol (rest comb) subst))))]
+           (let [ output (map apply-rule-map (concat (gen-subsumption newSol accent subst 0) (main mSol (rest comb) subst)))]
 
              ;(display (distinct output))
-             (distinct output)
+             output
              ;(println "length" (lengthList output 0))
 
              )
