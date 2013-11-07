@@ -54,10 +54,16 @@
     (cond
 
      (>= pos (lengthList sol 0) ) nil
-     (= 'ta hit) (cons (+ addnLoudness 0.75) (solToLoudness sol (+ pos 1)) )
+     (= 'ta hit) (cons (+ addnLoudness 0.7) (solToLoudness sol (+ pos 1)) )
      (= 'tum hit) (cons (+ addnLoudness 0.75) (solToLoudness sol (+ pos 1)) )
      (= '. hit) (cons 0 (solToLoudness sol (+ pos 1)) )
      (= 'te hit) (cons 0.375 (solToLoudness sol (+ pos 1)) )
+     (= '(ta te) hit) (cons 0.5 (solToLoudness sol (+ pos 1)) )
+     (= '(te te) hit) (cons 0.5 (solToLoudness sol (+ pos 1)) )
+      (= '(te ta) hit) (cons 0.5 (solToLoudness sol (+ pos 1)) )
+     (= '(ta tum) hit) (cons 0.6 (solToLoudness sol (+ pos 1)) )
+     (= '(tum ta) hit) (cons 0.6 (solToLoudness sol (+ pos 1)) )
+     (= '(tu tum) hit) (cons 0.75 (solToLoudness sol (+ pos 1)) )
      :else (cons 0 (solToLoudness sol (+ pos 1)) )
      )
 
@@ -146,3 +152,162 @@
 ;; second -> substitute with improv choices at the variable position
 ;; third -> substitute with improv choices at the variable position
 ;; fourth -> substitute with improv choices at the variable position
+
+(def variations '(((ta te) ta tum tum ta tum tum ta)
+(tum ta tum tum ta tum tum ta)
+(te ta tum tum ta tum tum ta)
+(ta ta tum tum ta tum tum ta)
+
+;1 and 2
+
+(tum tum tum tum ta tum tum ta)
+(tum . tum tum ta tum tum ta)
+(tum (ta te) ta tum ta tum tum ta)
+((ta te) (ta te) ta tum ta tum tum ta)
+(tum . ta tum ta tum tum ta)
+(tum tum ta tum ta tum tum ta)
+
+;1 and 3
+
+(ta ta ta tum ta tum tum ta)
+(tum ta ta tum ta tum tum ta)
+(te ta ta tum ta tum tum ta)
+(te ta (ta te) ta ta tum tum ta)
+(te ta te ta ta tum tum ta)
+(ta ta ta ta ta tum tum ta)
+(tum ta (ta te) ta ta tum tum ta)
+((ta te) ta (ta te) ta ta tum tum ta)
+(tum ta te ta ta tum tum ta)
+(ta ta te ta ta tum tum ta)
+(te ta ta ta ta tum tum ta)
+((ta te) ta te ta ta tum tum ta)
+(tum ta ta ta ta tum tum ta)
+((ta te) ta ta ta ta tum tum ta)
+
+
+;1 and 4
+
+
+(te ta tum tum ta tum tum ta)
+((ta te) ta tum (ta te) ta tum tum ta)
+(te ta tum ta ta tum tum ta)
+(te ta tum (ta te) ta tum tum ta)
+(tum ta tum ta ta tum tum ta)
+(ta ta tum tum ta tum tum ta)
+(ta ta tum ta ta tum tum ta)
+(tum ta tum (ta te) ta tum tum ta)
+((ta te) ta tum tum ta tum tum ta)
+(ta ta tum (ta te) ta tum tum ta)
+((ta te) ta tum ta ta tum tum ta)
+
+
+;1 and 5
+
+
+(tum ta tum tum (ta te) ta tum ta)
+(ta ta tum tum (ta te) ta tum ta)
+(tum ta tum tum tum ta tum ta)
+(tum ta tum tum ta ta tum ta)
+(te ta tum tum tum ta tum ta)
+(ta ta tum tum tum ta tum ta)
+((ta te) ta tum tum (ta te) ta tum ta)
+(te ta tum tum ta ta tum ta)
+((ta te) ta tum tum ta ta tum ta)
+((ta te) ta tum tum tum ta tum ta)
+(te ta tum tum (ta te) ta tum ta)
+(ta ta tum tum ta ta tum ta)
+
+;1 and 6
+
+
+((ta te) ta tum tum ta (ta te) ta ta)
+(tum ta tum tum ta te ta ta)
+((ta te) ta tum tum ta te ta ta)
+(ta ta tum tum ta ta ta ta)
+(tum ta tum tum ta ta ta ta)
+(ta ta tum tum ta (ta te) ta ta)
+(te ta tum tum ta ta ta ta)
+((ta te) ta tum tum ta ta ta ta)
+(tum ta tum tum ta (ta te) ta ta)
+(te ta tum tum ta te ta ta)
+(ta ta tum tum ta te ta ta)
+
+;1 and 7
+
+
+(te ta tum tum ta tum ta ta)
+((ta te) ta tum tum ta tum tum ta)
+(tum ta tum tum ta tum (ta te) ta)
+(ta ta tum tum ta tum ta ta)
+(tum ta tum tum ta tum ta ta)
+((ta te) ta tum tum ta tum (ta te) ta)
+(te ta tum tum ta tum tum ta)
+(ta ta tum tum ta tum tum ta)
+(ta ta tum tum ta tum (ta te) ta)
+((ta te) ta tum tum ta tum ta ta)
+(tum ta tum tum ta tum tum ta)
+
+
+;1 and 8
+
+((ta te) ta tum tum ta tum tum (ta te))
+(tum ta tum tum ta tum tum (ta te))
+(tum ta tum tum ta tum tum ta)
+(ta ta tum tum ta tum tum (ta te))
+(te ta tum tum ta tum tum tum)
+((ta te) ta tum tum ta tum tum tum)
+(tum ta tum tum ta tum tum tum)
+((ta te) ta tum tum ta tum tum ta)
+(ta ta tum tum ta tum tum ta)
+(te ta tum tum ta tum tum ta)
+(ta ta tum tum ta tum tum tum)
+
+
+;1, 2 and 3
+
+
+(tum tum tum tum ta tum tum ta)
+((ta te) (ta te) (ta te) ta ta tum tum ta)
+((te ta) (te ta) (te ta) tum ta tum tum ta)
+(tum ta tum ta ta tum tum ta)
+(tum tum tum ta ta tum tum ta)
+(tum ta tum tum ta tum tum ta)
+ )
+)
+
+
+(defn roundDecimal [num]
+
+  (if (or (float? num) (integer? num))
+
+    (float (/ (Math/round ( * num 100 )) 100))
+    0
+
+    )
+
+
+  )
+
+(defn disp [list]
+
+  (cond
+
+   (and (>= (charAtPos list 0 0) 0) (>= (charAtPos list 1 0) 0) (>= (charAtPos list 3 0) 0) (>= (charAtPos list 6 0) 0)  ) list
+   :else 0
+
+   )
+
+  )
+
+(defn find-differ [var Loudness]
+
+  (cond
+
+   (empty? var) nil
+   :else (do (println (first var) " " (disp (map roundDecimal (differ Loudness (solToLoudness (first var) 0)))) ) (find-differ (rest var) Loudness))
+
+   )
+
+  )
+
+(find-differ variations '(1 0.6 0.4 1 0.4 0.4 1 0.4))
