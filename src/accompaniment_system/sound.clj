@@ -326,10 +326,9 @@
 
       )
 
-
   (if (>= st (lengthList sol 0))
 
-      (let [beat (nome) st 0 bar (+ bar 1) sol (repToSound (charAtPos solList bar 0))]
+      (let [beat (nome) st 0 sol (repToSound (charAtPos solList bar 0)) bar (inc bar)]
 
         (if (= '. (charAtPos sol st 0))
                                         ;(println "sol" sol)
@@ -360,7 +359,7 @@
 
       )
 
-    )
+     )
 
   )
 
@@ -375,9 +374,9 @@
 
 ;(cons  ((charAtPos sol (+ pos 1) 0)))
 
-;(looper (metronome 200) '(nam . the . dhin . dhin . the . dhin . dhin . nam the) '(0.9 0 0.3 0 0.5 0 1 0 0.25 0 0.5 0 1 0 0.5 0.5) 0 )
+(looper (metronome 200) '(nam . the . dhin . dhin . the . dhin . dhin . nam the) '((nam the dhin dhin the dhin dhin (nam the))) '(0.9 0 0.3 0 0.5 0 1 0 0.25 0 0.5 0 1 0 0.5 0.5) 0 0 )
 
-;(looper (metronome 200) (mriMap '(nam . the . dhin . dhin . the . dhin . dhin . nam the)) '(0.9 0 0.3 0 0.5 0 1 0 0.25 0 0.5 0 1 0 0.5 0.5) 0 )
+(looper (metronome 200) (mriMap '(nam . the . dhin . dhin . the . dhin . dhin . nam the)) '((ta ta tum tum ta tum tum (ta te) )) '(0.9 0 0.3 0 0.5 0 1 0 0.25 0 0.5 0 1 0 0.5 0.5) 0 0 )
 
 
 
