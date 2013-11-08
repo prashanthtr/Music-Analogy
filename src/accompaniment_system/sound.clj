@@ -238,15 +238,6 @@
 
 
 
-(defn systemv1 [sol]
-
-  (println (apply-rule-map sol ))
-  ;(apply-rule-map (mriMap mridangam) )
-  ;mridangam
-  (apply-rule-map sol)
-
-  )
-
 ;(looper (metronome 200) (repToSound (mriMap '(nam the dhin dhin the dhin dhin (nam the)))) (selectPlay '(nam the dhin dhin the dhin dhin (nam the))) '(0.9 0 0.3 0 0.5 0 1 0 0.25 0 0.5 0 1 0 0.5 0.5) 0 0 )
 
 
@@ -287,6 +278,45 @@
     )
 
   )
+
+(defn systemv1 [sol]
+
+  (println (apply-rule-map sol ))
+  ;(apply-rule-map (mriMap mridangam) )
+  ;mridangam
+  (list (apply-rule-map (mriMap sol) ))
+
+  )
+
+(defn hashToList [hash]
+
+  (cond
+   (empty? hash) nil
+   :else (cons (first hash) (hashToList (rest hash)))
+
+   )
+
+  )
+
+
+
+(defn systemv2 [mridangam]
+
+  (let [ pos (positions mridangam) mri (main mridangam (list (hashToList (clojure.set/difference (set '(0 1 2 3 4 5 6 7)) (set pos) )))  {'. '?p '(ta te) '?d '(te ta) '?d '(ta tum) '?d '(tum tum) '?d '(tum ta) '?d  'tum '?nA 'ta '?nA 'te '?nA} ) ]
+    mri
+    )
+
+ )
+
+(defn systemv3 [mridangam]
+
+  (let [ pos (positions mridangam) mri (main mridangam (list (random-subst (combinations '(0 1 2 3 4 5 6 7) 2) 0)) {'. '?p '(ta te) '?d '(te ta) '?d '(ta tum) '?d '(tum tum) '?d '(tum ta) '?d  'tum '?nA 'ta '?nA 'te '?nA} ) ]
+    mri
+    )
+
+  )
+
+
 
 ; this function will play our sound at whatever tempo we've set our metronome to
 (defn looper [nome sol solList vol st bar]
@@ -373,7 +403,12 @@
 (looper (metronome 200) (repToSound '(nam the dhin dhin the dhin dhin (nam the))) (list '(nam the dhin dhin the dhin dhin (nam the))) '(0.9 0 0.3 0 0.5 0 1 0 0.25 0 0.5 0 1 0 0.5 0.5) 0 0 )
 
 
-(looper (metronome 200) (repToSound (mriMap '(nam the dhin dhin the dhin dhin (nam the)))) (selectPlay '(nam the dhin dhin the dhin dhin (nam the))) '(0.9 0 0.3 0 0.5 0 1 0 0.25 0 0.5 0 1 0 0.5 0.5) 0 0 )
+;(looper (metronome 200) (repToSound (mriMap '(nam the dhin dhin the dhin dhin (nam the)))) (systemv1 '(nam the dhin dhin the dhin dhin (nam the))) '(0.9 0 0.3 0 0.5 0 1 0 0.25 0 0.5 0 1 0 0.5 0.5) 0 0 )
+
+                                        ;(looper (metronome 200) (repToSound (mriMap '(nam the dhin dhin the dhin dhin (nam the)))) (systemv2 '(nam the dhin dhin the dhin dhin (nam the))) '(0.9 0 0.3 0 0.5 0 1 0 0.25 0 0.5 0 1 0 0.5 0.5) 0 0 )
+
+
+(looper (metronome 200) (repToSound (mriMap '(nam the dhin dhin the dhin dhin (nam the)))) (systemv3 '(nam the dhin dhin the dhin dhin (nam the))) '(0.9 0 0.3 0 0.5 0 1 0 0.25 0 0.5 0 1 0 0.5 0.5) 0 0 )
 
 
 ;(cons  ((charAtPos sol (+ pos 1) 0)))

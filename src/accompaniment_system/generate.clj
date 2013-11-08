@@ -885,7 +885,7 @@
 (defn gen-subsumption [Sol accent subst st]
 
 
-  (let [ pos (sort (positions Sol) ) newSol (var-sub (apply-rule-map Sol) pos 0 subst)
+  (let [ pos (sort (notChangeRule (distinct (concat (positions Sol) (nonAccentPos Sol accent 0 ) )) accent) ) newSol (var-sub (apply-rule-map Sol) pos 0 subst)
         ]
 
     ;(notChangeRule (distinct (concat (positions Sol) (nonAccentPos Sol accent 0 ) )) accent)
@@ -911,7 +911,7 @@
   (cond
 
    (empty? comb) nil
-   :else (let [accent (first comb) pos (sort (positions mSol) ) newSol (mriMap mSol)
+   :else (let [accent (first comb) pos (sort (notChangeRule (distinct (concat (positions mSol) (nonAccentPos mSol accent 0 ) )) accent) ) newSol (mriMap mSol)
                                         ;(var-sub (apply-rule-map (mriMap mSol)) pos 0 subst)
                ;(notChangeRule (distinct (concat (positions mSol) (nonAccentPos mSol accent 0 ) )) accent)
                ]
