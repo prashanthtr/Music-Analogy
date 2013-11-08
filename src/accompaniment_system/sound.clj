@@ -316,8 +316,6 @@
 
   )
 
-
-
 ; this function will play our sound at whatever tempo we've set our metronome to
 (defn looper [nome sol solList vol st bar]
 
@@ -400,24 +398,18 @@
 
   )
 
-(looper (metronome 200) (repToSound '(nam the dhin dhin the dhin dhin (nam the))) (list '(nam the dhin dhin the dhin dhin (nam the))) '(0.9 0 0.3 0 0.5 0 1 0 0.25 0 0.5 0 1 0 0.5 0.5) 0 0 )
+(def metrono (metronome 200))
+(def mridangam '(nam the dhin dhin . dhin dhin (nam the)))
+(def volum '(0.9 0.3 0.3 0.3 0.5 0.3 1 0.3 0.25 0.3 0.5 0.3 1 0.2 0.5 0.5))
 
+(looper metrono (repToSound mridangam) (list mridangam) volum  0 0 )
 
-;(looper (metronome 200) (repToSound (mriMap '(nam the dhin dhin the dhin dhin (nam the)))) (systemv1 '(nam the dhin dhin the dhin dhin (nam the))) '(0.9 0 0.3 0 0.5 0 1 0 0.25 0 0.5 0 1 0 0.5 0.5) 0 0 )
+;(looper metrono (repToSound (mriMap mridangam)) (systemv1 mridangam) volum 0 0 )
 
-                                        ;(looper (metronome 200) (repToSound (mriMap '(nam the dhin dhin the dhin dhin (nam the)))) (systemv2 '(nam the dhin dhin the dhin dhin (nam the))) '(0.9 0 0.3 0 0.5 0 1 0 0.25 0 0.5 0 1 0 0.5 0.5) 0 0 )
+;(looper metrono (repToSound (mriMap mridangam)) (systemv2 mridangam) volum 0 0 )
 
+;(looper metrono (repToSound (mriMap mridangam)) (systemv3 mridangam) volum 0 0 )
 
-(looper (metronome 200) (repToSound (mriMap '(nam the dhin dhin the dhin dhin (nam the)))) (systemv3 '(nam the dhin dhin the dhin dhin (nam the))) '(0.9 0 0.3 0 0.5 0 1 0 0.25 0 0.5 0 1 0 0.5 0.5) 0 0 )
-
-
-;(cons  ((charAtPos sol (+ pos 1) 0)))
-
-;(looper (metronome 200) '(nam . nam the dhin . dhin . the . dhin . dhin . the .) '((nam (nam the) dhin dhin the dhin dhin the)) '(0.9 0 0.3 0.2 0.5 0 1 0 0.25 0 0.5 0 1 0 0.5 0.5) 0 0 )
-
-;;start with the first substitutions only
-
-;(looper (metronome 300) (mriMap '(nam . nam the dhin . dhin . the . dhin . dhin . the .)) (selectPlay '(nam (nam the) dhin dhin the dhin dhin the)) '(0.9 0 0.3 0.2 0.5 0 1 0 0.25 0 0.5 0 1 0 0.5 0.5) 0 0 )
 
 
 ;; one version of the system that strictly plays only with the forced choices
@@ -429,15 +421,3 @@
 ;; other version that substitutes at pauses, double hits and also at the non accented positions, selection of choices is random.
 
 ;;only one thing to calibrate -> loudness is same as perceptual loudnes, hmm
-
-;;meotrnome > 200
-
-
-(defsynth reverb-on-left []
-  (let [dry (play-buf 1 (ret-sound 'tum) 1)
-	]
-    (out 0 [dry])))
-
-;(reverb-on-left)
-
-;(play-buf 1 (load-sample "src/accompaniment_system/audio/ta.wav" ))
