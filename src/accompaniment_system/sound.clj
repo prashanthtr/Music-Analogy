@@ -3,7 +3,7 @@
 
 (defn ret-sound [sol]
 
-  (let [randomN (rand-int 2) kick (sample (freesound-path 2086)) tum (sample "src/accompaniment_system/audio/tum.wav" ) ta (sample "src/accompaniment_system/audio/ta.wav" ) nam (sample "src/accompaniment_system/audio/num.wav" ) dhin (sample "src/accompaniment_system/audio/dhin.wav" ) the (sample "src/accompaniment_system/audio/thi.wav" ) te (sample "src/accompaniment_system/audio/te.wav" ) ]
+  (let [randomN (rand-int 2) kick (load-sample (freesound-path 2086)) tum (load-sample "src/accompaniment_system/audio/tum.wav" ) ta (load-sample "src/accompaniment_system/audio/ta.wav" ) nam (load-sample "src/accompaniment_system/audio/num.wav" ) dhin (load-sample "src/accompaniment_system/audio/dhin.wav" ) the (load-sample "src/accompaniment_system/audio/thi.wav" ) te (load-sample "src/accompaniment_system/audio/te.wav" ) ]
 
     (cond
 
@@ -66,7 +66,10 @@
 
 (defn play-sample
   [samp time vol]
-  (at time (stereo-player samp :vol vol)))
+  ;(sample-player samp :rate 1 :loop? false)
+  ;(play-buf 0 samp 1)
+  (at time (stereo-player samp :vol vol))
+  )
 
 
 (defn newSol []
@@ -291,7 +294,12 @@
 
    (if (>= bar (lengthList solList 0))
 
-    (let [bar 0 sol (repToSound (first solList))]
+     (let [bar 0  solList (cond
+
+                           (> 1 (lengthList solList 0)) (selectPlay sol)
+                           :else solList
+                           )
+           sol (repToSound (first solList))]
 
       (if (>= st (lengthList sol 0))
 
@@ -354,8 +362,7 @@
           )
 
         (apply-at (nome (inc beat)) looper nome sol solList vol (inc st) bar [])
-
-       )
+        )
 
       )
 
@@ -363,23 +370,19 @@
 
   )
 
-
-;(looper (metronome 200) (repToSound '(nam the dhin dhin the dhin dhin (nam the))) (list '(nam the dhin dhin the dhin dhin (nam the))) '(0.9 0 0.3 0 0.5 0 1 0 0.25 0 0.5 0 1 0 0.5 0.5) 0 0 )
-
-
-;(looper (metronome 200) (repToSound (mriMap '(nam the dhin dhin the dhin dhin (nam the)))) (selectPlay '(nam the dhin dhin the dhin dhin (nam the))) '(0.9 0 0.3 0 0.5 0 1 0 0.25 0 0.5 0 1 0 0.5 0.5) 0 0 )
+(looper (metronome 200) (repToSound '(nam the dhin dhin the dhin dhin (nam the))) (list '(nam the dhin dhin the dhin dhin (nam the))) '(0.9 0 0.3 0 0.5 0 1 0 0.25 0 0.5 0 1 0 0.5 0.5) 0 0 )
 
 
+(looper (metronome 200) (repToSound (mriMap '(nam the dhin dhin the dhin dhin (nam the)))) (selectPlay '(nam the dhin dhin the dhin dhin (nam the))) '(0.9 0 0.3 0 0.5 0 1 0 0.25 0 0.5 0 1 0 0.5 0.5) 0 0 )
 
 
 ;(cons  ((charAtPos sol (+ pos 1) 0)))
 
-(looper (metronome 200) '(nam . the . dhin . dhin . the . dhin . dhin . nam the) '((nam the dhin dhin the dhin dhin (nam the))) '(0.9 0 0.3 0 0.5 0 1 0 0.25 0 0.5 0 1 0 0.5 0.5) 0 0 )
+;(looper (metronome 200) '(nam . nam the dhin . dhin . the . dhin . dhin . the .) '((nam (nam the) dhin dhin the dhin dhin the)) '(0.9 0 0.3 0.2 0.5 0 1 0 0.25 0 0.5 0 1 0 0.5 0.5) 0 0 )
 
-(looper (metronome 200) (mriMap '(nam . the . dhin . dhin . the . dhin . dhin . nam the)) '((ta ta tum tum ta tum tum (ta te) )) '(0.9 0 0.3 0 0.5 0 1 0 0.25 0 0.5 0 1 0 0.5 0.5) 0 0 )
+;;start with the first substitutions only
 
-
-
+;(looper (metronome 300) (mriMap '(nam . nam the dhin . dhin . the . dhin . dhin . the .)) (selectPlay '(nam (nam the) dhin dhin the dhin dhin the)) '(0.9 0 0.3 0.2 0.5 0 1 0 0.25 0 0.5 0 1 0 0.5 0.5) 0 0 )
 
 
 ;; one version of the system that strictly plays only with the forced choices
@@ -391,3 +394,15 @@
 ;; other version that substitutes at pauses, double hits and also at the non accented positions, selection of choices is random.
 
 ;;only one thing to calibrate -> loudness is same as perceptual loudnes, hmm
+
+;;meotrnome > 200
+
+
+(defsynth reverb-on-left []
+  (let [dry (play-buf 1 (ret-sound 'tum) 1)
+	]
+    (out 0 [dry])))
+
+;(reverb-on-left)
+
+;(play-buf 1 (load-sample "src/accompaniment_system/audio/ta.wav" ))
