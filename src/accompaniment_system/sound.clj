@@ -3,6 +3,7 @@
 
 (defn ret-sound [sol]
 
+  (println sol)
   (let [randomN (rand-int 2) kick (load-sample (freesound-path 2086)) tum (load-sample "src/accompaniment_system/audio/tum.wav" ) ta (load-sample "src/accompaniment_system/audio/ta.wav" ) nam (load-sample "src/accompaniment_system/audio/num.wav" ) dhin (load-sample "src/accompaniment_system/audio/dhin.wav" ) the (load-sample "src/accompaniment_system/audio/thi.wav" ) te (load-sample "src/accompaniment_system/audio/te.wav" ) ]
 
     (cond
@@ -41,7 +42,8 @@
      (= '(te ta) hit) (cons 0.3 (solToLoudness sol (+ pos 1)) )
      (= '(ta tum) hit) (cons 0.6 (solToLoudness sol (+ pos 1)) )
      (= '(tum ta) hit) (cons 0.6 (solToLoudness sol (+ pos 1)) )
-     (= '(tu tum) hit) (cons 0.75 (solToLoudness sol (+ pos 1)) )
+     (= '(tum tum) hit) (cons 0.75 (solToLoudness sol (+ pos 1)) )
+     (= '(tum te) hit) (cons 0.75 (solToLoudness sol (+ pos 1)) )
      :else (cons 0 (solToLoudness sol (+ pos 1)) )
      )
 
@@ -148,6 +150,8 @@
                 (= 'te sol2) 0.5
                 (= '(ta te) sol2) 0.2
                 (= '(te ta) sol2) 0.2
+                (= '(tum ta) sol2) 0.4
+                (= '(ta tum) sol2) 0.4
                 (= '. sol2) 0
 
                 )
@@ -160,6 +164,8 @@
                  (= 'te sol2) 0.5
                  (= '(ta te) sol2) 0.3
                  (= '(te ta) sol2) 0.3
+                 (= '(tum ta) sol2) 0.4
+                 (= '(ta tum) sol2) 0.4
                  :else 0
 
                  )
@@ -170,6 +176,8 @@
                   (= 'te sol2) 0.6
                   (= '(ta te) sol2) 0.3
                   (= '(te ta) sol2) 0.3
+                  (= '(tum ta) sol2) 0.4
+                  (= '(ta tum) sol2) 0.4
                   :else 0
 
                   )
@@ -180,6 +188,8 @@
                   (= 'te sol2) 0
                   (= '(ta te) sol2)
                   (= '(te ta) sol2)
+                  (= '(tum ta) sol2) 0.4
+                  (= '(ta tum) sol2) 0.4
                   :else 0
                  )
 
@@ -190,6 +200,8 @@
                       (= 'te sol2) 0.6
                       (= '(ta te) sol2) 0
                       (= '(te ta) sol2) 0.2
+                      (= '(tum ta) sol2) 0.4
+                      (= '(ta tum) sol2) 0.4
                       :else 0
                       )
 
@@ -200,9 +212,12 @@
                       (= 'te sol2) 0.6
                       (= '(ta te) sol2) 0.2
                       (= '(te ta) sol2) 0
+                      (= '(tum ta) sol2) 0.4
+                      (= '(ta tum) sol2) 0.4
                       :else 0
                       )
 
+      :else 1
    )
 
   )
@@ -225,8 +240,16 @@
   (cond
 
    (empty? var) nil
-   :else (do (println (first var) " " (disp (map roundDecimal (differ Loudness (similarity sol (first var)))) ) ) (find-differ sol (rest var) Loudness) )
+   :else (do (println (first var) " " (disp (map roundDecimal (differ Loudness (similarity sol (first var)))) ) )
 
+             (let [retOrnot (disp (map roundDecimal (differ Loudness (similarity sol (first var)))) )]
+
+               (cond
+                (= 0 retOrnot) (find-differ sol (rest var) Loudness)
+                :else (cons (first var) (find-differ sol (rest var) Loudness) )
+                )
+               )
+             )
    )
 
   )
@@ -261,7 +284,7 @@
 (defn repToSound [sol]
 
 
-  (println sol)
+  ;(println sol)
   (cond
    (= nil (first sol)) nil
    (empty? sol) nil
@@ -302,16 +325,38 @@
 
 (defn systemv2 [mridangam]
 
-  (let [ pos (positions mridangam) mri (main mridangam (list (hashToList (clojure.set/difference (set '(0 1 2 3 4 5 6 7)) (set pos) )))  {'. '?p '(ta te) '?d '(te ta) '?d '(ta tum) '?d '(tum tum) '?d '(tum ta) '?d  'tum '?nA 'ta '?nA 'te '?nA} ) ]
-    mri
+  (let [ pos (positions mridangam) mri (main mridangam (list (hashToList (clojure.set/difference (set '(0 1 2 3 4 5 6 7)) (set pos) )))  {'. '?p '(ta te) '?d '(te ta) '?d '(ta tum) '?d '(tum tum) '?d '(tum ta) '?d '(tum te) '?d 'tum '?nA 'ta '?nA 'te '?nA} ) ]
+
+    (display mri)
+    ;mri
     )
 
  )
 
 (defn systemv3 [mridangam]
 
-  (let [ pos (positions mridangam) mri (main mridangam (list (random-subst (combinations '(0 1 2 3 4 5 6 7) 2) 0)) {'. '?p '(ta te) '?d '(te ta) '?d '(ta tum) '?d '(tum tum) '?d '(tum ta) '?d  'tum '?nA 'ta '?nA 'te '?nA} ) ]
+  (let [ pos (positions mridangam) mri (main mridangam (list (random-subst (combinations '(0 1 2 3 4 5 6 7) 2) 0)) {'. '?p '(ta te) '?d '(te ta) '?d '(ta tum) '?d '(tum tum) '?d '(tum ta) '?d '(tum te) '?d 'tum '?nA 'ta '?nA 'te '?nA} ) ]
+    (println mri)
     mri
+    )
+
+  )
+
+;;selects from amongst the choices and plays only the compatible ones as per the above loudness conditions
+
+(defn systemv4 [mridangam loudness]
+
+
+  (let [ pos (positions mridangam) mri (main mridangam (list (random-subst (combinations '(0 1 2 3 4 5 6 7) 2) 0)) {'. '?p '(ta te) '?d '(te ta) '?d '(ta tum) '?d '(tum tum) '?d '(tum ta) '?d '(tum te) '?d 'tum '?nA 'ta '?nA 'te '?nA} ) ]
+
+                                        ;(concat (combinations '(0 1 2 3 4 5 6 7) 2) (combinations '(0 1 2 3 4 5 6 7) 1) (combinations '(0 1 2 3 4 5 6 7) 3))
+   ; comb (list (random-subst (combinations '(0 1 2 3 4 5 6 7) 2) 0))
+
+    (println (mriMap mridangam) loudness )
+    (find-differ (mriMap mridangam) variations loudness )
+
+    ;(display (distinct mri))
+    ;mri
     )
 
   )
@@ -364,7 +409,7 @@
 
   (if (>= st (lengthList sol 0))
 
-      (let [beat (nome) st 0 sol (repToSound (charAtPos solList bar 0)) bar (inc bar)]
+      (let [beat (nome) st 0 sol (repToSound (charAtPos solList bar 0)) bar (inc bar) ]
 
         (if (= '. (charAtPos sol st 0))
                                         ;(println "sol" sol)
@@ -401,14 +446,19 @@
 (def metrono (metronome 200))
 (def mridangam '(nam the dhin dhin . dhin dhin (nam the)))
 (def volum '(0.9 0.3 0.3 0.3 0.5 0.3 1 0.3 0.25 0.3 0.5 0.3 1 0.2 0.5 0.5))
+(def vol-system4 '(0.9 0.3 0.5 1 0.25 0.5 1 0.5))
 
-(looper metrono (repToSound mridangam) (list mridangam) volum  0 0 )
+;(looper metrono (repToSound mridangam) (list mridangam) volum 0 0 )
 
 ;(looper metrono (repToSound (mriMap mridangam)) (systemv1 mridangam) volum 0 0 )
 
 ;(looper metrono (repToSound (mriMap mridangam)) (systemv2 mridangam) volum 0 0 )
 
 ;(looper metrono (repToSound (mriMap mridangam)) (systemv3 mridangam) volum 0 0 )
+
+;(looper metrono (repToSound (mriMap mridangam)) (systemv4 mridangam vol-system4) volum 0 0 )
+
+
 
 
 
@@ -421,3 +471,29 @@
 ;; other version that substitutes at pauses, double hits and also at the non accented positions, selection of choices is random.
 
 ;;only one thing to calibrate -> loudness is same as perceptual loudnes, hmm
+
+;;tum te hangs program
+
+
+(defn sound [sol]
+
+  (println sol)
+  (let [randomN (rand-int 2) kick (sample (freesound-path 2086)) tum (sample "src/accompaniment_system/audio/tum.wav" ) ta (sample "src/accompaniment_system/audio/ta.wav" ) nam (sample "src/accompaniment_system/audio/num.wav" ) dhin (sample "src/accompaniment_system/audio/dhin.wav" ) the (sample "src/accompaniment_system/audio/thi.wav" ) te (sample "src/accompaniment_system/audio/te.wav" ) ]
+
+    (cond
+
+     (= 'tum sol) (tum)
+     (= 'ta sol) ta
+     (= 'nam sol) nam
+     (= 'dhin sol) dhin
+     (= 'the sol) the
+     (= 'te sol) te
+     :else nil
+     )
+
+    )
+
+  )
+
+
+(dorun (map-indexed (fn [i n] (at (+ (now) (* i 100)) (sound n))) ['tum 'tum]))
