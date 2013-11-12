@@ -530,6 +530,11 @@
   )
 
 
+(defn tempo-s [tempo]
+
+  (*  (/ 60 tempo) 1000)
+
+  )
 ;;interprets the hits on the pattern based as single or double and plays them
 (defn patern-play [tempo]
 
@@ -540,3 +545,13 @@
     )
 
   )
+
+(defn looper [nome]
+  (let [beat (nome)]
+
+    (println (metro-tick nome))
+    (at (nome beat) (patern-play (metro-tick nome)))
+    (apply-at (nome (+ 9 beat)) looper nome []))
+  )
+
+;(looper metrono)
