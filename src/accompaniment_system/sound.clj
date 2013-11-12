@@ -483,7 +483,7 @@
     (cond
 
      (= 'tum sol) (tum)
-     (= 'ta sol) ta
+     (= 'ta sol) (ta)
      (= 'nam sol) nam
      (= 'dhin sol) dhin
      (= 'the sol) the
@@ -495,5 +495,48 @@
 
   )
 
+(defn ret-seq []
 
-(dorun (map-indexed (fn [i n] (at (+ (now) (* i 100)) (sound n))) ['tum 'tum]))
+  '(tum . tum ta ta tum tum ta)
+
+  )
+
+(defn list2Vec [list]
+
+  (into [] list)
+
+  )
+
+(defn time-hit [tempo sol]
+
+  (cond
+
+   (empty? sol) nil
+   (list? (first sol)) (concat (list (/ tempo 2) (/ tempo 2)) (time-hit tempo (rest sol) )  )
+   :else (cons tempo (time-hit tempo (rest sol) ) )
+   )
+
+  )
+
+(defn d2Sr [sol]
+
+  (cond
+
+   (empty? sol) nil
+   (list? (first sol)) (concat (list (first (first sol)) (first (rest (first sol)))) (d2Sr (rest sol) )  )
+   :else (cons (first sol) (d2Sr (rest sol) ) )
+   )
+
+  )
+
+
+;;interprets the hits on the pattern based as single or double and plays them
+(defn patern-play [tempo]
+
+  (let [tmp (ret-seq) speed (list2Vec (time-hit tempo tmp)) pattern (list2Vec (d2Sr tmp)) ]
+
+    (dorun (map-indexed (fn [i n] (at (+ (now) (* i (nth speed i))) (sound n))) pattern))
+
+    )
+
+  )
