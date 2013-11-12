@@ -67,10 +67,13 @@
 
 
 (defn play-sample
-  [samp time vol]
-  ;(sample-player samp :rate 1 :loop? false)
-  ;(play-buf 0 samp 1)
-  (at time (stereo-player samp :vol vol))
+  [samp vol]
+  (if (= nil samp)
+
+    nil
+    (stereo-player samp :vol vol)
+    )
+
   )
 
 
@@ -536,22 +539,20 @@
 
   )
 ;;interprets the hits on the pattern based as single or double and plays them
-(defn patern-play [tempo]
+(defn pattern-play [tempo volume]
 
-  (let [tmp (ret-seq) speed (list2Vec (time-hit tempo tmp)) pattern (list2Vec (d2Sr tmp)) ]
+  (let [vol (list2Vec volume) tmp (ret-seq) speed (list2Vec (time-hit tempo tmp)) pattern (list2Vec (d2Sr tmp)) ]
 
-    (dorun (map-indexed (fn [i n] (at (+ (now) (* i (nth speed i))) (sound n))) pattern))
+    (dorun (map-indexed (fn [i n] (at (+ (now) (* i (nth speed i))) (play-sample (ret-sound n) (nth vol i)))) pattern))
 
     )
 
   )
 
-(defn looper [nome]
+(defn looper [nome volume]
   (let [beat (nome)]
 
     (println (metro-tick nome))
-    (at (nome beat) (patern-play (metro-tick nome)))
-    (apply-at (nome (+ 9 beat)) looper nome []))
+    (at (nome beat) (pattern-play (metro-tick nome) volume))
+    (apply-at (nome (+ 9 beat)) looper nome volume []))
   )
-
-;(looper metrono)
