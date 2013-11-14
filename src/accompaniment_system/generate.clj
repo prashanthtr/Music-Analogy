@@ -755,7 +755,6 @@
 
 (defn single-level-subst [hit pos]
 
-
   (cond
 
    (= pos 0) (random-subst '(tum ta te (ta te)) pos) ;;first position
@@ -1114,3 +1113,383 @@
 (tum ta tum tum ta tum tum ta)
  )
 )
+
+
+
+
+(defn subst-pos [subst sol pos]
+
+  (reverse (into () (assoc (into [] sol ) pos subst)))
+
+  )
+
+(defn subst-pos-dbl [subst sol pos]
+
+  (reverse (into () (assoc (into [] sol ) pos (first subst) (inc pos) (first (rest subst)) )))
+
+  )
+
+(defn subst-pos-tpl [subst sol pos]
+
+  (reverse (into () (assoc (into [] sol ) pos (first subst) (+ 1 pos) (charAtPos subst 1 0) (+ pos 2) (charAtPos subst 2 0) )))
+
+  )
+
+
+(defn all-single [subst sol pos]
+
+  (cond
+
+   (empty? pos) nil
+   :else (concat
+
+          (cond
+           (empty? subst) nil
+           :else (cons (subst-pos (first subst) sol (first pos)) (all-single (rest subst) sol pos))
+           )
+          (all-single subst sol (rest pos))
+
+          )
+
+   )
+
+  )
+
+
+(defn all-double [subst sol pos]
+
+  (cond
+
+   (empty? pos) nil
+   :else (concat
+
+          (cond
+
+           (empty? pos) nil
+           :else (concat
+
+                  (cond
+                   (empty? subst) nil
+                   :else (cons (subst-pos-dbl (first subst) sol (first pos)) (all-double (rest subst) sol pos))
+                   )
+                  (all-double subst sol (rest pos))
+
+                  )
+
+           )
+
+          )
+
+   ))
+
+
+(defn all-triple [subst sol pos]
+
+  (cond
+
+   (empty? pos) nil
+   :else (concat
+
+          (cond
+
+           (empty? pos) nil
+           :else (concat
+
+                  (cond
+                   (empty? subst) nil
+                   :else (cons (subst-pos-tpl (first subst) sol (first pos)) (all-triple (rest subst) sol pos))
+                   )
+                  (all-triple subst sol (rest pos))
+
+                  )
+
+           )
+
+          )
+
+   )
+
+  )
+
+
+(defn make-distict [subst sol pos]
+
+
+  (let [substitutions (all-double subst sol pos)]
+
+    (display (distinct (map apply-rule-map substitutions)))
+
+    )
+
+  )
+
+
+(def var1 '((ta . tum ta ta tum tum ta)
+(ta (ta te) ta ta ta tum tum ta)
+(ta (te ta) tum ta ta tum tum ta)
+(ta (tum ta) tum ta ta tum tum ta)
+(ta ta tum ta ta tum tum ta)
+(ta tum ta ta ta tum tum ta)
+(ta tum tum . ta tum tum ta)
+(ta tum tum (ta te) ta tum tum ta)
+(ta tum tum (te ta) tum tum tum ta)
+(ta tum tum ta . tum tum ta)
+(ta tum tum ta ta . tum ta)
+(ta tum tum ta ta (ta te) ta ta)
+(ta tum tum ta ta (te ta) tum ta)
+(ta tum tum ta ta (tum ta) tum ta)
+(ta tum tum ta ta ta tum ta)
+(ta tum tum ta ta tum ta ta)
+(ta tum tum ta ta tum tum (ta te))
+(ta tum tum ta ta tum tum (te ta))
+(ta tum tum ta ta tum tum (tum ta))
+(ta tum tum ta ta tum tum ta)
+(ta tum tum ta tum tum tum ta)
+(ta tum tum tum ta tum tum ta)
+(tum tum tum ta ta tum tum ta)))
+
+
+(def var2 '(((ta te) ta tum tum ta tum tum ta)
+(ta . tum tum ta tum tum ta)
+(ta (ta te) ta tum ta tum tum ta)
+(ta (te ta) tum tum ta tum tum ta)
+(ta (tum ta) tum tum ta tum tum ta)
+(ta ta (te ta) tum ta tum tum ta)
+(ta ta (tum ta) tum ta tum tum ta)
+(ta ta ta tum ta tum tum ta)
+(ta ta tum (ta te) ta tum tum ta)
+(ta ta tum (te ta) tum tum tum ta)
+(ta ta tum ta ta tum tum ta)
+(ta ta tum tum . tum tum ta)
+(ta ta tum tum (ta te) ta tum ta)
+(ta ta tum tum (te ta) tum tum ta)
+(ta ta tum tum (tum ta) tum tum ta)
+(ta ta tum tum ta tum . ta)
+(ta ta tum tum ta tum (ta te) ta)
+(ta ta tum tum ta tum ta ta)
+(ta ta tum tum ta tum tum .)
+(ta ta tum tum ta tum tum (ta te))
+(ta ta tum tum ta tum tum (te ta))
+(ta ta tum tum ta tum tum (tum ta))
+(ta ta tum tum ta tum tum ta)
+(ta tum tum tum ta tum tum ta)
+(te ta tum tum ta tum tum ta)
+(tum ta tum tum ta tum tum ta)))
+
+
+(def var1-dbl '(((ta te) (ta te) ta ta ta tum tum ta)
+((te ta) (te ta) tum ta ta tum tum ta)
+((tum ta) (te ta) tum ta ta tum tum ta)
+((tum ta) (tum ta) tum ta ta tum tum ta)
+(ta (ta te) (ta te) ta ta tum tum ta)
+(ta (ta te) ta ta ta tum tum ta)
+(ta (te ta) (te ta) tum ta tum tum ta)
+(ta (tum ta) tum ta ta tum tum ta)
+(ta ta (ta te) ta ta tum tum ta)
+(ta tum (ta te) (ta te) ta tum tum ta)
+(ta tum (ta te) (ta tum) ta tum tum ta)
+(ta tum (tum ta) (te ta) tum tum tum ta)
+(ta tum (tum ta) (tum ta) tum tum tum ta)
+(ta tum ta (ta te) ta tum tum ta)
+(ta tum ta (tum ta) tum tum tum ta)
+(ta tum tum . ta tum tum ta)
+(ta tum tum (ta te) (ta te) ta tum ta)
+(ta tum tum (ta te) ta tum tum ta)
+(ta tum tum (te ta) (te ta) tum tum ta)
+(ta tum tum (tum ta) (te ta) tum tum ta)
+(ta tum tum ta (te ta) (te ta) tum ta)
+(ta tum tum ta (tum ta) (te ta) tum ta)
+(ta tum tum ta (tum ta) (tum ta) tum ta)
+(ta tum tum ta ta (tum ta) tum ta)
+(ta tum tum ta ta tum (ta te) (ta te))
+(ta tum tum ta ta tum (ta te) ta)
+(ta tum tum ta ta tum (te ta) (te ta))
+(ta tum tum ta ta tum (tum ta) (te ta))
+(ta tum tum ta ta tum (tum ta) (tum ta))
+(ta tum tum ta ta tum ta (ta te))
+(ta tum tum ta ta tum tum (ta te))
+(ta tum tum ta tum . tum ta)
+(ta tum tum tum . tum tum ta)
+(tum . tum ta ta tum tum ta)
+(tum (ta te) ta ta ta tum tum ta)))
+
+(def var1-tpl '(((ta te) (ta te) (ta te) ta ta tum tum ta)
+(ta (ta te) (ta te) (ta te) ta tum tum ta)
+(ta (ta te) (ta te) ta ta tum tum ta)
+(ta ta (ta te) (ta te) ta tum tum ta)
+(ta tum . . ta tum tum ta)
+(ta tum (ta te) (ta te) ta tum tum ta)
+(ta tum tum . . tum tum ta)
+(ta tum tum ta ta tum (ta te) (ta te))
+(tum . . ta ta tum tum ta)
+(tum (ta te) (ta te) ta ta tum tum ta)))
+
+(defn ret-subst [sol pos]
+
+  (cond
+
+   (empty? pos) nil
+   (list? (charAtPos sol (first pos) 0)) (concat (charAtPos sol (first pos) 0) (ret-subst sol (rest pos))  )
+   :else (cons (charAtPos sol (first pos) 0) (ret-subst sol (rest pos))  )
+
+   )
+
+  )
+
+(defn disp-pos-var [var]
+
+
+  (cond
+
+   (empty? var) nil
+   :else (let [ pos (positions (first var)) sol (first var) ]
+
+           (println pos (ret-subst sol pos) )
+           (disp-pos-var (rest var))
+           )
+   )
+
+  )
+
+;(disp-pos-var var1)
+                                        ;(disp-pos-var var2)
+
+(disp-pos-var var1-dbl)
+(disp-pos-var var1-tpl)
+
+;make single, double, triple susbstitutions for the
+
+;same pattern,  and
+;different patterns,
+
+;come up with the weighting function
+;( double taps are less weighted than other substitions in beat just before accented positions than in other positions)
+;( double taps are less/equally weighted as other substitutions in last beat than in other positions)
+
+;with the same set of substitutions
+
+                                       ;what is the significance of the positions that the variations mostly occur in
+
+; significance in the bar, significant in the groove, (loudness, accent, start, end, middle beat)
+
+; based on position in the bar
+
+(double taps are more weighted as other substitutions in last beat)
+
+(first beat)
+(1 double taps are less weighted in the first beat than in the 2nd)
+
+(2 double taps is more weighted in the first beat than 1 double tap)
+
+(3 double taps is equally weighted as 2 double taps in the first beat)
+
+(second beat)
+
+(symm pattern, same as sixth beat)
+(1 double tap less weighted as 1 double in 1st)
+
+(2 double tap same as weighted on 1st beat)
+
+(3 double taps weighted more than 1st beat)
+
+
+(third beat)
+
+(symm pattern, same as 7th beat)
+
+(1 double beat > 2 double beats > 3 double beats)
+
+(1 double beat < other substitutions)
+
+(fourth beat)
+
+(1 double taps are eqaully weighted than other substitutions)
+
+(2 double equal as other substitutions)
+
+(3 double more than as other substitutions)
+
+(fifth)
+
+(symm pattern, rules are same as first beat)
+
+
+(sixth beat)
+
+(2 double tap more weighted than 1 double tap )
+
+(1 double tap equal weighted to other substitutions)
+
+(3 double tap same as 1 double tap)
+
+
+(seventh beat)
+
+(1 double tap is weighted more than other substitutions)
+
+(2 double tap less weighted than 1 double tap but equal to other substitutions)
+
+
+(eight beat)
+
+(1 double taps are eqaully weighted than other substitutions)
+
+(2 , 3 double taps not possible)
+
+
+;based on the accent
+
+(The beat following an accent is usually accepted for variation)
+
+(typically there are 2, 3 4 accents in a bar)
+
+when there are - (3-3-2), (2-3-3),(3-2-3) configurations are possible
+when are 2 accents (4-4)
+4 accents, (2-2-2-2)
+
+;;playing single <1 double < 2 double< 3 double
+
+(for every accents, there are beats before and after the accented beat)
+
+;(on the accent beat that falls in the first position)
+
+(1 double tap > 2, 3 double taps)
+
+(2,3 double taps = single tap)
+
+(on other accent beats)
+
+(2,3 > 1 double tap > single subst)
+
+(3 double taps > all other costs)
+
+;(beat following the accent)
+
+(1 double beat weight = single beat weight)
+
+(2 double beats)
+
+;(2 double beats can either end 1 or 2 beat before next accent )
+
+(if they end 1 beat before next accent)
+(2 double beat weight = 1 double beat weight)
+:else (2 double beat weight > 3 double taps)
+
+(3 double taps)
+
+(if they end 1 beat before next accent)
+(3 double beat weight = 1 double beat weight)
+:else (3 double beat weight > 2 double taps)
+
+;(beat before the accent)
+
+(1 double beat weight = single beat weight)
+
+( 2,3 double beat > far greater)
+
+
+
+(2 double beat = 1 double beat only for 1st beat)
+
+
+(double beat < triple in beat following accent)
