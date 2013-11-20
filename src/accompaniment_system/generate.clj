@@ -428,37 +428,43 @@
 
 (defn single-level-subst [hit pos]
 
-  (cond
+  (random-subst '(tum ta te (ta te) (tum ta) (te ta) .) 0)
 
-   (= pos 0) (random-subst '(tum ta te (ta te)) pos) ;;first position
-   (list? hit) (random-subst '(tum (ta te) .) pos)
-   (resonant hit) (random-subst '(tum (ta te) .) pos)
-   :else (random-subst '(ta te (ta te) .) pos)
-   )
+;(cond
+
+   ;(= pos 0) (random-subst '(tum ta te (ta te)) pos) ;;first position
+ ;  (list? hit) (random-subst '(tum (ta te) .) pos)
+  ; (resonant hit) (random-subst '(tum (ta te) .) pos)
+  ; :else (random-subst '(ta te (ta te) .) pos)
+   ;)
 
   )
 
 (defn double-level-subst [pos]
 
-  (cond
+  ;(cond
 
-   (not= 0 pos) (random-subst '(((ta te) tum) ((ta te) (ta te)) (tum .)) pos)
-   :else (random-subst '((tum (ta te) ) (tum tum) ((ta te) (ta te)) (tum .)) pos)
+   ;(not= 0 pos) (random-subst '(((ta te) tum) ((ta te) (ta te)) (tum .)) pos)
+  ; :else (random-subst '((tum (ta te) ) (tum tum) ((ta te) (ta te)) (tum .)) pos)
 
-   )
+                                        ;)
+
+  (random-subst   '((tum (ta te) ) (tum tum) ((ta te) (ta te)) (tum .) ((ta te) tum) ((ta te) ta) (ta (ta te)) ((tum ta) tum) (tum (tum ta)) (ta (tum ta)) (ta (ta te) ) (tum (te ta))) 0)
 
   )
 
 (defn third-level-subst [pos]
 
-  (cond
+  (random-subst '((tum tum tum) (tum ta tum) ((te ta) (te ta) (te ta)) ((ta te) (ta te) (ta te))) 0)
 
-   (not= 0 pos) (random-subst '(((ta te) (ta te) (ta te))  ((te ta) (te ta) (te ta)) ) pos)
-   :else (random-subst '((tum tum tum) (tum ta tum) ((te ta) (te ta) (te ta)) ((ta te) (ta te) (ta te))) pos)
+  ;(cond
+
+                                        ;   (not= 0 pos) (random-subst '(((ta te) (ta te) (ta te))  ((te ta) (te ta) (te ta)) ) pos)
+                                        ;  :else (random-subst '((tum tum tum) (tum ta tum) ((te ta) (te ta) (te ta)) ((ta te) (ta te) (ta te))) pos)
+
+                                        ;)
 
    )
-
-  )
 
 
 (defn ret-op [var]
@@ -592,26 +598,8 @@
 ;; all the groove that are meaningful variations of the current groove
 
 
-(defn multi-level-subst2 [sol pos]
-
-
-  (let [
-        single-subs '(tum ta te (ta te) (tum ta) (te ta) .)
-        double-subs '((tum (ta te) ) (tum tum) ((ta te) (ta te)) (tum .) ((ta te) tum)
-                      ((ta te) ta) (ta (ta te)) ((tum ta) tum) (tum (tum ta)) (ta (tum ta)) (ta (ta te) ) (tum (te ta))
-                      )
-        triple-subs '((tum tum tum) (tum ta tum) ((te ta) (te ta) (te ta)) ((ta te) (ta te) (ta te)))
-
-        subs-1 (all-single single-subs sol pos)
-        subs-2 (all-double double-subs sol pos)
-        subs-3 (all-triple triple-subs sol pos)
-        ]
-
-    (display (distinct (map apply-rule-map subs-1)))
-    (display (distinct (map apply-rule-map subs-2)))
-    (display (distinct (map apply-rule-map subs-3)))
-    )
-  )
+;; gives priority to double if there is a chance of the double substitution
+;; gives priority to triple if there is a chance of triple substition
 
 ;;makes substitution taking into account the speed of the hits in the substitution
 (defn multi-level-subst [sol st]
@@ -667,13 +655,36 @@
 
 ;; Takes in a forced choice with the variable positions, a particlar interpretation of the forced choice ( accent positions), substitution array and displays the possible choices generated from it
 
+(defn generation-multi-subst [forced-sol comb-pos subst st]
 
-(defn gen-subsumption [Sol accent]
+  (cond
+
+   (empty? comb-pos) nil
+   :else
+   (let [pos (first comb-pos)
+         newSol (var-sub (apply-rule-map forced-sol) pos 0 subst)
+         ]
+
+     ;(println newSol)
+     (cond
+
+      (< st 100) (distinct (cons (multi-level-subst newSol 0) (generation-multi-subst forced-sol comb-pos subst (+ st 1)) ))
+      :else (generation-multi-subst forced-sol (rest comb-pos) subst 0)
+      )
+
+     )
+
+   )
+
+  )
+
+
+(defn gen-subsumption [Sol accent subst]
 
 
   (let [ pos (sort (notChangeRule (positions Sol) accent) )
         pos2 (distinct (concat (positions Sol) (nonAccentPos Sol accent 0 ) ))
-        ;newSol (var-sub (apply-rule-map Sol) pos 0 subst)
+        newSol (var-sub (apply-rule-map Sol) pos 0 subst)
 
         ]
 
@@ -702,19 +713,31 @@
 
 ;; Takes in lead mridangam, multiple combination arrays( each is an interpretation of the lead) and substition mappings and generates valid substitions according to the rules
 
+(defn all-combinations [list st]
+
+  (cond
+
+   (>= st (lengthList list 0)) nil
+   :else (concat (combinations list st) (all-combinations list (+ st 1))  )
+   )
+
+  )
+
 (defn main [mSol comb subst]
 
   (cond
 
    (empty? comb) nil
-   :else (let [accent (first comb) pos (sort (notChangeRule (distinct (concat (positions mSol) (nonAccentPos mSol accent 0 ) )) accent) ) newSol (mriMap mSol)
+   :else (let [accent (first comb) pos (sort (notChangeRule (positions mSol) accent) ) newSol (mriMap mSol)
                                         ;(var-sub (apply-rule-map (mriMap mSol)) pos 0 subst)
                ;(notChangeRule (distinct (concat (positions mSol) (nonAccentPos mSol accent 0 ) )) accent)
                ]
-                                        ;(println "main" pos newSol)
-           (let [ output (map apply-rule-map (concat (gen-subsumption newSol accent) (main mSol (rest comb) subst)))]
+           (println "main" pos newSol (all-combinations pos 0))
+           (let [
+                 comb-pos (all-combinations pos 0)
+                 output (map apply-rule-map (concat (generation-multi-subst newSol comb-pos subst 0) (main mSol (rest comb) subst)))]
 
-             output
+             (distinct output)
 
              )
 
