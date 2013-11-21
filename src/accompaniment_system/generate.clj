@@ -717,7 +717,7 @@
 
   (cond
 
-   (>= st (lengthList list 0)) nil
+   (> st (lengthList list 0)) nil
    :else (concat (combinations list st) (all-combinations list (+ st 1))  )
    )
 

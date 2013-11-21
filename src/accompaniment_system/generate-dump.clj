@@ -1357,3 +1357,19 @@
 
 ;(disp-pos-var var1-dbl)
 ;(disp-pos-var var1-tpl)
+
+
+
+TODO:
+
+IMplement the inter order bonds in each of the choices
+this is done in terms of hits between accents, double hits, single hits
+
+Output: different possible perceptions based on the forming the inter-order bonds ( just take one pattern to do this shit)
+
+Implement the bridges
+
+Form bridges between the different choices and the forced choice using the above built structures
+Bridge is formed based on whether the same set (opposite set) of groups play similar roles in their respective frameworks
+opposite is difficult to percieve than same
+strength of each bridge is determined by the identity mappings beneath it ( correspondence of symbols with symbols, groups with groups)
