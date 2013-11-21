@@ -77,38 +77,72 @@
 
 ;; bind a variable to a pattern and find if the same binding holds for the rest of the pattern, else extend the binding to include next element and check the rest of the pattern
 
-(defn check-binding [list binding]
+(defn check-binding [var list binding]
 
   ;(println list binding)
-  (let [bind (get binding list)]
+  (let [bind (get binding var)]
 
     (cond
 
-     (= nil bind) false
+     (not= list bind) false
      :else true
      )
     )
   )
 
-(defn symm [sol binding st]
+(defn check-binding-compl [var list binding]
 
-  (let [list (check-len sol)
-        seq (subsequ sol 0 st 0)
-        binding {seq '?sym}
+  ;(println list binding)
+  (let [bind (get binding var )]
+
+    (cond
+     (not= (reverse list) bind) false
+     :else true
+     )
+    )
+  )
+
+(defn symm [list bindings st var chk-binding]
+
+  (let [;list (check-len sol)
+        seq (subsequ list 0 st 0)
+        binding {var seq}
         ]
 
-    (println list)
+    ;(println list)
     ;(println binding)
     (cond
 
-     (> st (lengthList list 0)) nil
-     (check-binding (subsequ list (+ st 1) (- (lengthList list 0) 1) 0) binding) binding
-     :else (symm list binding (+ st 1))
+     (>= st (lengthList list 0)) bindings
+     (chk-binding var (subsequ list (+ st 1) (- (lengthList list 0) 1) 0) binding) (do (println var binding) (merge binding bindings) )
+     :else (symm list bindings (+ st 1) var chk-binding)
 
      )
 
     )
 
+
+  )
+
+;; takes a pattern and finds the symmetry across whole, and half patterns
+(defn sym-sol [sol bindings]
+
+
+  (let [
+        firsthalf (subsequ sol 0 3 0)
+        secondhalf (subsequ sol 4 (- (lengthList sol 0) 1) 0)
+        cb check-binding
+        ccb check-binding-compl
+        b1 (symm sol bindings 0 '(same whole) cb )
+        b2 (symm firsthalf b1 0 '(same first) cb)
+        b3 (symm secondhalf b2 0 '(same second) cb)
+        b1 (symm sol bindings 0 '(opp whole) ccb )
+        b2 (symm firsthalf b1 0 '(opp first) ccb)
+        b4 (symm secondhalf b2 0 '(opp second) ccb)
+
+        ]
+    (merge b3 b4)
+    )
 
   )
 
@@ -118,7 +152,7 @@
   (cond
 
    (empty? lists) nil
-   :else  (cons (symm (first lists)) (symm-bonds (rest lists)) )
+   :else  (cons (sym-sol (first lists) {}) (symm-bonds (rest lists)) )
    )
 
   )
