@@ -124,6 +124,46 @@
 
   )
 
+;;function returns description of the position of the double hit in the beginning, middle and end of the pattern
+;beginning 1 beat - first
+;middle 2 beats - (first last)
+;end last
+
+
+;;builds description of double hits in the pattern
+
+(defn doublehit [sol bindings var]
+
+  (let [
+        b1 (cond
+
+            (list? (first sol)) (merge bindings {(cons '(first) var) (first sol) })
+            :else bindings
+            )
+        b2 (cond
+
+            (list? (last sol)) (merge b1 {(cons '(last) var) (last sol) })
+            :else bindings
+            )
+        len (lengthList sol 0)
+        halflen (/ len 2)
+        mid (subsequ sol (- halflen 1) halflen 0)
+        middle '(middle)
+        b3 (cond
+
+            (and (list? (first mid)) (list? (first sol)) ) (merge b2 {(cons (cons 'whole middle) var) mid})
+            (list? (first mid)) (merge b2 {(cons (cons '(first) middle) var) (first mid) })
+            (list? (last mid)) (merge b2 { (cons (cons '(last) middle) var) (last mid)})
+            :else b2
+            )
+
+        ]
+    b3
+    )
+
+  )
+
+
 ;; takes a pattern and finds the symmetry across whole, and half patterns
 (defn sym-sol [sol bindings]
 
@@ -139,9 +179,11 @@
         b1 (symm sol bindings 0 '(opp whole) ccb )
         b2 (symm firsthalf b1 0 '(opp first) ccb)
         b4 (symm secondhalf b2 0 '(opp second) ccb)
-
+        b1 (doublehit sol bindings '(dh whole))
+        b2 (doublehit firsthalf b1 '(dh first))
+        b5 (doublehit secondhalf b2 '(dh second))
         ]
-    (merge b3 b4)
+    (merge b3 b4 b5)
     )
 
   )
@@ -157,13 +199,36 @@
 
   )
 
-;;creates inorder groupings using double hits and accent groupings
-(defn inorder-bonds [sol accents subst]
 
 
-  (let [groupings (interpretations sol accents)]
+(defn desc-matching [ sol1-desc sol2-desc]
 
-    (symm-bonds (cons sol groupings))
+  (cond
+
+   (empty? sol1-desc) nil
+   :else (let [
+               desc (nth (first sol1-desc) 0)
+               ]
+           (cond
+
+            (not= nil (get sol2-desc desc)) (do (println "bridge formed" desc) (desc-matching (rest sol1-desc) sol2-desc) )
+            :else (desc-matching (rest sol1-desc) sol2-desc)
+            )
+
+           )
+   )
+
+  )
+
+;creates bridges between descriptor notatios
+(defn bridges [sol]
+
+  (let [
+        descriptors (symm-bonds sol)
+        desc1 (first descriptors)
+        desc2 (last descriptors)
+        ]
+    (desc-matching desc1 desc2)
 
     )
 
