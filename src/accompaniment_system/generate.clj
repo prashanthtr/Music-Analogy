@@ -688,24 +688,24 @@
 
         ]
 
-    (cond
+    ;(cond
 
-     (empty? pos) (multi-level-subst2 Sol pos2)
-     :else (multi-level-subst2 Sol pos)
+     ;(empty? pos) (multi-level-subst2 Sol pos2)
+     ;:else (multi-level-subst2 Sol pos)
 
-     )
+     ;)
 
-    ;(distinct (concat (positions Sol) (nonAccentPos Sol accent 0 ) ))
-    ;(notChangeRule (distinct (concat (positions Sol) (nonAccentPos Sol accent 0 ) )) accent)
-    ;(println "pattern" newSol)
+                                        ;(distinct (concat (positions Sol) (nonAccentPos Sol accent 0 ) ))
+                                        ;(notChangeRule (distinct (concat (positions Sol) (nonAccentPos Sol accent 0 ) )) accent)
+                                        ;(println "pattern" newSol)
 
-;   (cond
+                                        ;   (cond
 
                                         ; (>= st 3) nil
                                         ; :else
 
                                         ;    )
-    ;substSol
+                                        ;substSol
     )
   )
 

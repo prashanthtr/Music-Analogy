@@ -114,13 +114,12 @@
     (cond
 
      (>= st (lengthList list 0)) bindings
-     (chk-binding var (subsequ list (+ st 1) (- (lengthList list 0) 1) 0) binding) (do (println var binding) (merge binding bindings) )
+     (chk-binding var (subsequ list (+ st 1) (- (lengthList list 0) 1) 0) binding) (merge binding bindings)
      :else (symm list bindings (+ st 1) var chk-binding)
 
      )
 
     )
-
 
   )
 
@@ -151,7 +150,7 @@
         middle '(middle)
         b3 (cond
 
-            (and (list? (first mid)) (list? (first sol)) ) (merge b2 {(cons (cons 'whole middle) var) mid})
+            (and (list? (first mid)) (list? (first sol)) ) (merge b2 {(cons (cons '(whole) middle) var) mid})
             (list? (first mid)) (merge b2 {(cons (cons '(first) middle) var) (first mid) })
             (list? (last mid)) (merge b2 { (cons (cons '(last) middle) var) (last mid)})
             :else b2
@@ -188,13 +187,75 @@
 
   )
 
-; checks and creates the symmetry bindings if any for each of the list
-(defn symm-bonds [lists]
+
+(defn relationBetween [s1 s2]
+
+  ;(println s1 s2)
+
+  (cond
+   (nil? s1) 'NR
+   (nil? s2) 'NR
+   (= s1 s2) 'I
+
+   (and (= s1 'first) (= s2 'second) ) 'opposite
+   (and (= s1 'second) (= s2 'first)) 'opposite
+
+   (and (= s1 'first) (= s2 'last) ) 'opposite
+   (and (= s1 'last) (= s2 'first)) 'opposite
+
+   (and (= s1 '(middle (last))) (= s2 '(first))) 'predecessor
+   (and (= s2 '(middle (last))) (= s1 '(first))) 'sucessor
+   (and (= s1 '(middle (first))) (= s2 '(last))) 'sucessor
+   (and (= s2 '(middle (first))) (= s1 '(last))) 'predecessor
+
+   (and (= s1 '(middle (whole))) (= s2 '(middle (first))) ) 'supplementary
+   (and (= s2 '(middle (first))) (= s1 '(middle (whole))) ) 'supplementary
+   (and (= s1 '(middle (whole))) (= s2 '(middle (last))) ) 'supplementary
+   (and (= s2 '(middle (last))) (= s1 '(middle (whole))) ) 'supplementary
+
+   ;; middle and no middle is also supplementary
+
+   :else 'NR ;no relation
+
+   )
+
+  )
+
+(defn relationSol [sol1 sol2]
 
   (cond
 
-   (empty? lists) nil
-   :else  (cons (sym-sol (first lists) {}) (symm-bonds (rest lists)) )
+   (= sol1 sol2) 'same
+   (= sol1 (reverse sol2)) 'opp
+
+
+   )
+
+  )
+
+
+;Defines the relation between same types of object descriptions. Same in the sense of number of beats they describe is the same
+
+; returns a string with NR if no relation is possible between any 2 descriptors
+
+;;handle error
+
+(defn relationDesc [desc1 desc2]
+
+  (cond
+
+   (empty? desc1) nil
+   :else (let [
+               b1 (relationBetween (first desc1) (first desc2))
+               ]
+
+           (cond
+
+            (= 'nil b1) nil
+            :else (cons b1 (relationDesc (rest desc1) (rest desc2)))
+            )
+           )
+
    )
 
   )
@@ -220,16 +281,117 @@
 
   )
 
+
 ;creates bridges between descriptor notatios
-(defn bridges [sol]
+(defn bridges [desc1 desc2]
+
+  (cond
+
+   (empty? (first desc1)) nil
+   :else (cond
+
+          (empty? (first desc2)) nil
+          :else (concat (let [
+                              rel(relationDesc (first desc1) (first desc2))
+                              ]
+                          (cond
+
+                           (= -1 (.indexOf rel 'NR)) (cons {(list (first desc1) (first desc2)) rel} (bridges desc1 (rest desc2)) )
+                           :else (concat () (bridges desc1 (rest desc2)))
+
+                           )
+
+                          )
+                        (bridges (rest desc1) desc2)  )
+          )
+   )
+  )
+
+(defn joinDescSol [desc sol]
+
+  (cond
+
+   (empty? sol) nil
+   :else (cons (list (first desc) (first sol)) (joinDescSol (rest desc) (rest sol)))
+
+   )
+
+  )
+
+(defn deeprev [sol]
+
+
 
   (let [
-        descriptors (symm-bonds sol)
-        desc1 (first descriptors)
-        desc2 (last descriptors)
+        f (first sol)
         ]
-    (desc-matching desc1 desc2)
+    (println f (list? f))
+    (cond
 
+     (empty? sol) nil
+     (list? f) (do (println "enter" f) (cons (reverse f) (deeprev (rest sol))) )
+     :else (cons f (deeprev (rest sol)))
+     )
+
+    )
+
+
+  )
+
+(defn deeprev-abstr [lists]
+
+
+  (cond
+   (empty? lists) nil
+   :else (cons (deeprev (first lists)) (deeprev-abstr (rest lists)) )
+
+   )
+
+  )
+
+(defn setToList [set]
+
+
+  (let [
+        desc1 (map reverse (map first (into [] set) ))
+        desc (deeprev-abstr (into () desc1))
+        sol (map last (into [] set))
+        joined (joinDescSol desc sol)
+        ]
+
+    (println desc)
+    (println joined)
+    joined
+    )
+
+  )
+
+; checks and creates the symmetry bindings if any for each of the list
+(defn symm-bonds [lists]
+
+  (cond
+
+   (empty? lists) nil
+   :else  (cons (sym-sol (first lists) {}) (symm-bonds (rest lists)) )
+   )
+
+  )
+
+(defn createStruct [lists]
+
+  (let [
+        desc-sol (symm-bonds lists)
+        description (map setToList desc-sol)
+        d1 (first description)
+        d2 (last description)
+        d1-desc (map first d1)
+        d1-sol (map last d1)
+        d2-desc (map first d2)
+        d2-sol (map last d2)
+        ]
+    (println d1)
+    (println d2)
+    (distinct (bridges d1-desc d2-desc))
     )
 
   )
