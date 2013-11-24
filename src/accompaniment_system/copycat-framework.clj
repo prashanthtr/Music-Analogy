@@ -325,11 +325,11 @@
   (let [
         f (first sol)
         ]
-    (println f (list? f))
+    ;(println f sol (seq? f))
     (cond
 
      (empty? sol) nil
-     (list? f) (do (println "enter" f) (cons (reverse f) (deeprev (rest sol))) )
+     (seq? f) (do (println "enter" f) (cons (reverse f) (deeprev (rest sol))) )
      :else (cons f (deeprev (rest sol)))
      )
 
@@ -338,29 +338,18 @@
 
   )
 
-(defn deeprev-abstr [lists]
-
-
-  (cond
-   (empty? lists) nil
-   :else (cons (deeprev (first lists)) (deeprev-abstr (rest lists)) )
-
-   )
-
-  )
-
 (defn setToList [set]
 
-
+  ;(println set)
   (let [
         desc1 (map reverse (map first (into [] set) ))
-        desc (deeprev-abstr (into () desc1))
+        desc (map deeprev desc1)
         sol (map last (into [] set))
         joined (joinDescSol desc sol)
         ]
 
-    (println desc)
-    (println joined)
+    ;(println desc)
+    ;(println joined)
     joined
     )
 
@@ -377,7 +366,70 @@
 
   )
 
-(defn createStruct [lists]
+
+
+(defn desc-var [pos]
+
+  (cond
+
+   (= pos 0) (list '(( whole dh (first) )) '((first dh (first))))
+   (= pos 1) '(( first dh (middle (first)) ))
+   (= pos 2) '(( first dh (middle (last)) ))
+   (= pos 3) (list '(( whole dh (middle (first)) )) '((first dh (last))))
+   (= pos 4) (list '(( whole dh (middle (last)) )) '((second dh (first))))
+   (= pos 5) '(( second dh (middle (first)) ))
+   (= pos 6) '(( second dh (middle (last)) ))
+   (= pos 7) (list '(( whole dh (last) )) '((second dh (last))))
+   :else nil
+
+   )
+
+  )
+
+(defn listtoEmptySet [list]
+
+  {list ()}
+
+  )
+
+(defn lists-to-set [lists]
+
+  (cond
+
+   (empty? lists) nil
+   :else (let [
+               sol (first lists)
+               ]
+           (cond
+            (> (lengthList sol 0) 1) (merge (lists-to-set sol) (lists-to-set (rest lists)) )
+            :else (merge (listtoEmptySet sol) (lists-to-set (rest lists))  )
+            )
+
+           )
+
+   )
+
+  )
+
+
+(defn var-discr-descr [var-pos]
+
+  (let [
+        desc (map desc-var var-pos)
+        descr (lists-to-set desc)
+        d1 (map first (into [] descr) )
+        d2 (map first d1)
+        sol (map last (into [] descr))
+        joined (map hash-map d2 sol)
+        ]
+    (into {} joined)
+    )
+
+  )
+
+;;creates structures also taking into account the possible variable opsitions
+
+(defn createStruct [lists var]
 
   (let [
         desc-sol (symm-bonds lists)
@@ -385,12 +437,16 @@
         d1 (first description)
         d2 (last description)
         d1-desc (map first d1)
+        var-desc (var-discr-descr var)
+        d1-merge (merge var-desc d1-desc)
         d1-sol (map last d1)
         d2-desc (map first d2)
         d2-sol (map last d2)
         ]
-    (println d1)
-    (println d2)
+    ;(println desc-sol)
+    (println d1-desc)
+
+    (println d2-desc)
     (distinct (bridges d1-desc d2-desc))
     )
 
