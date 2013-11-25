@@ -348,7 +348,6 @@
         joined (joinDescSol desc sol)
         ]
 
-    ;(println desc)
     ;(println joined)
     joined
     )
@@ -429,6 +428,130 @@
 
 ;;creates structures also taking into account the possible variable opsitions
 
+;;stub
+;(createStruct '((ta tum tum ta ta tum tum ta) (ta tum tum (ta te) ta tum tum ta)) '(0 4) )
+
+
+(defn singlify [list]
+
+  (cond
+
+   (empty? list) nil
+   :else ( concat (first list) (singlify (rest list)))
+
+   )
+
+  )
+
+
+(defn make-set [el1 el2]
+
+  {el1 el2}
+
+  )
+
+(defn make-set-lists [list]
+
+  (cond
+
+   (empty? list) nil
+   :else (merge (make-set (first list) (first (rest list))) (make-set-lists (rest (rest list)) )   )
+
+   )
+
+  )
+
+(defn iter-sol [d1 desc]
+
+  (cond
+
+   (empty? desc) nil
+   :else (cons (get d1 (first desc)) (iter-sol d1 (rest desc)))
+
+   )
+
+  )
+
+(defn setToList-gen [set]
+
+  ;(println set)
+  (let [
+        desc (map reverse (map first (into [] set) ))
+        sol (map reverse (map last (into [] set)))
+        desc (singlify desc)
+        ]
+    (println "desc" desc)
+    (println "sol" (map reverse sol))
+    (map reverse sol)
+    )
+
+  )
+
+(defn relation-hits [h1 h2]
+
+  (cond
+   (and (empty? h1) (list? h2)) 'supplementary
+   (and (not (list? h1)) (list? h2)) 'supplementary
+   (and (list? h1) (not (list? h2))) 'supplementary
+   :else 'NR
+   )
+
+  )
+
+(defn bridges-hits[t1 t2 h1 h2 bridges]
+
+  (cond
+
+   (empty? h1) bridges
+   :else (let [
+               rln (relation-hits (first h1) (first h2))
+               ]
+           (cond
+
+            (= rln 'NR) (bridges-hits (rest t1) (rest t2) (rest h1) (rest h2) bridges)
+            :else (bridges-hits (rest t1) (rest t2) (rest h1) (rest h2)
+                                (merge bridges
+                                       {(list (first t1) (first t2) ) rln}
+                                       )
+                                )
+            )
+
+           )
+   )
+
+  )
+
+(defn reln-hits [d1 d2 bridges]
+
+  (println bridges)
+  (let [
+
+        desc (map first bridges) ;contains all the first of bridges
+        reln (map last bridges)
+        t1 (map first desc)
+        t2 (map last desc)
+        d1-sol (iter-sol d1 t1)  ;contains the forced desc related to disc
+        d2-sol (iter-sol d2 t2) ;contains the discr desc related to forced
+        ]
+    (bridges-hits t1 t2 d1-sol d2-sol {})
+    )
+
+  )
+
+
+(defn list-to-set [list set]
+
+  (cond
+
+   (empty? list) set
+   :else (list-to-set (rest list) (merge set (first list)))
+   )
+
+  )
+
+;(reln-hits '{(same whole) (ta tum tum ta), (opp first) (ta tum), (opp whole) (ta tum tum ta), (opp second) (ta tum), (((last) middle) dh whole) (), ((first) dh second) (), ((first) dh first) (), ((first) dh whole) ()} )
+
+
 (defn createStruct [lists var]
 
   (let [
@@ -444,11 +567,21 @@
         d1-sol (map last d1)
         d2-desc (map first d2)
         d2-sol (map last d2)
+        bridge-sol (distinct (bridges d1-desc d2-desc))
+        bridge (setToList-gen bridge-sol)
+        d1-set (make-set-lists (singlify d1))
+        d2-set (make-set-lists (singlify d2))
+        bridges-var (reln-hits d1-set d2-set bridge)
         ]
 
-    (println d1-desc)
-    (println d2-desc)
-    (distinct (bridges d1-desc d2-desc))
+    ;(println desc-sol)
+    ;(println d2-desc)
+    ;(println d1-set)
+                                        ;(println d2-set)
+    (println bridges-var)
+    (println bridge-sol)
+    (merge (list-to-set bridge-sol {}) bridges-var )
+
     )
 
   )
