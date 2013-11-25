@@ -372,14 +372,14 @@
 
   (cond
 
-   (= pos 0) (list '(( whole dh (first) )) '((first dh (first))))
-   (= pos 1) '(( first dh (middle (first)) ))
-   (= pos 2) '(( first dh (middle (last)) ))
-   (= pos 3) (list '(( whole dh (middle (first)) )) '((first dh (last))))
-   (= pos 4) (list '(( whole dh (middle (last)) )) '((second dh (first))))
-   (= pos 5) '(( second dh (middle (first)) ))
-   (= pos 6) '(( second dh (middle (last)) ))
-   (= pos 7) (list '(( whole dh (last) )) '((second dh (last))))
+   (= pos 0) (list '(((first) dh whole)) '(((first) dh first)))
+   (= pos 1) '( (((first) middle) dh first) )
+   (= pos 2) '( (((last) middle) dh first) )
+   (= pos 3) (list '( (((first) middle) dh whole) ) '(((last) dh first) ))
+   (= pos 4) (list '((((last) middle ) dh whole)) '(((first) dh second)))
+   (= pos 5) '((((first) middle) dh second))
+   (= pos 6) '((((last) middle) dh second))
+   (= pos 7) (list '(((last) dh whole)) '(((last) dh second)))
    :else nil
 
    )
@@ -433,19 +433,20 @@
 
   (let [
         desc-sol (symm-bonds lists)
-        description (map setToList desc-sol)
+        forced-desc (first desc-sol)
+        var-desc (var-discr-descr var)
+        forced (merge var-desc forced-desc)
+        forced-discr (cons forced (rest desc-sol))
+        description (map setToList forced-discr)
         d1 (first description)
         d2 (last description)
         d1-desc (map first d1)
-        var-desc (var-discr-descr var)
-        d1-merge (merge var-desc d1-desc)
         d1-sol (map last d1)
         d2-desc (map first d2)
         d2-sol (map last d2)
         ]
-    ;(println desc-sol)
-    (println d1-desc)
 
+    (println d1-desc)
     (println d2-desc)
     (distinct (bridges d1-desc d2-desc))
     )
