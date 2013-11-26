@@ -142,7 +142,7 @@
         b2 (cond
 
             (list? (last sol)) (merge b1 {(cons '(last) var) (last sol) })
-            :else bindings
+            :else b1
             )
         len (lengthList sol 0)
         halflen (/ len 2)
@@ -492,7 +492,8 @@
   (cond
    (and (empty? h1) (list? h2)) 'supplementary
    (and (not (list? h1)) (list? h2)) 'supplementary
-   (and (list? h1) (not (list? h2))) 'supplementary
+   (and (list? h1) (not (list? h2))) 'rev-supplementary
+   (and (list? h1) (list? h2) (= h1 h2)) 'Identity
    :else 'NR
    )
 
@@ -552,6 +553,49 @@
 ;(reln-hits '{(same whole) (ta tum tum ta), (opp first) (ta tum), (opp whole) (ta tum tum ta), (opp second) (ta tum), (((last) middle) dh whole) (), ((first) dh second) (), ((first) dh first) (), ((first) dh whole) ()} )
 
 
+;in the case of similar descriptors(complementary), system ignores the
+;in the case of unsimilar descriptors, system takes the hits into account
+
+;next step is to make sense of these connections and use them to select from amongst the discretionary
+
+(defn hit-relation [common set1 set2 relatn]
+
+  (println "enter hit-relation" relatn)
+  (cond
+   (empty? common) relatn
+   :else (let [
+                h1 (get set1 (first common))
+                h2 (get set2 (first common))
+                reln (relation-hits h1 h2)
+
+                ]
+            ;(println "relantion" h1 h2 reln)
+            (cond
+
+             (= reln 'NR) (hit-relation (rest common) set1 set2 relatn)
+             :else (hit-relation (rest common) set1 set2 (merge { (list (first common) (first common) ) reln} relatn ) )
+             )
+            )
+   )
+
+  )
+
+(defn bridge-same-desc [set1 set2]
+
+  (let [
+        desc1 (set (map first set1))
+        desc2 (set (map first set2))
+        common (intersection desc1 desc2)
+        bridge-same (hit-relation (into () common) set1 set2 {})
+        ]
+    ;common
+    bridge-same
+    )
+
+  )
+
+
+
 (defn createStruct [lists var]
 
   (let [
@@ -576,11 +620,14 @@
 
     ;(println desc-sol)
     ;(println d2-desc)
-    ;(println d1-set)
-                                        ;(println d2-set)
-    (println bridges-var)
-    (println bridge-sol)
-    (merge (list-to-set bridge-sol {}) bridges-var )
+    (println d1-set)
+    (println d2-set)
+    ;(println bridges-var)
+    ;(println bridge-sol)
+
+    (bridge-same-desc d1-set d2-set )
+
+    ;(merge (list-to-set bridge-sol {}) bridges-var )
 
     )
 
