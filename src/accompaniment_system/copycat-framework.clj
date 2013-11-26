@@ -70,7 +70,7 @@
 
 (defn check-len [sol]
 
-  (println sol)
+  ;(println sol)
   (> (lengthList sol 0) 1) (check-len (first sol))
   :else sol
   )
@@ -197,21 +197,20 @@
    (nil? s2) 'NR
    (= s1 s2) 'I
 
-   (and (= s1 'first) (= s2 'second) ) 'opposite
-   (and (= s1 'second) (= s2 'first)) 'opposite
+   (and (= s1 'first) (= s2 'second) ) 'successor   (and (= s1 'second) (= s2 'first)) 'predecessor
 
-   (and (= s1 'first) (= s2 'last) ) 'opposite
-   (and (= s1 'last) (= s2 'first)) 'opposite
+   (and (= s1 'first) (= s2 'last) ) 'successor
+   (and (= s1 'last) (= s2 'first)) 'predecessor
 
    (and (= s1 '(middle (last))) (= s2 '(first))) 'predecessor
    (and (= s2 '(middle (last))) (= s1 '(first))) 'sucessor
    (and (= s1 '(middle (first))) (= s2 '(last))) 'sucessor
    (and (= s2 '(middle (first))) (= s1 '(last))) 'predecessor
 
-   (and (= s1 '(middle (whole))) (= s2 '(middle (first))) ) 'supplementary
-   (and (= s2 '(middle (first))) (= s1 '(middle (whole))) ) 'supplementary
-   (and (= s1 '(middle (whole))) (= s2 '(middle (last))) ) 'supplementary
-   (and (= s2 '(middle (last))) (= s1 '(middle (whole))) ) 'supplementary
+   (and (= s1 '(middle (whole))) (= s2 '(middle (first))) ) 'rev-supplementary
+   (and (= s1 '(middle (first))) (= s2 '(middle (whole))) ) 'supplementary
+   (and (= s1 '(middle (whole))) (= s2 '(middle (last))) ) 'rev-supplementary
+   (and (= s1 '(middle (last))) (= s2 '(middle (whole))) ) 'supplementary
 
    ;; middle and no middle is also supplementary
 
@@ -227,8 +226,6 @@
 
    (= sol1 sol2) 'same
    (= sol1 (reverse sol2)) 'opp
-
-
    )
 
   )
@@ -282,27 +279,70 @@
   )
 
 
-;creates bridges between descriptor notatios
-(defn bridges [desc1 desc2]
+
+(defn descriptorMatch [desc1 desc2]
 
   (cond
 
-   (empty? (first desc1)) nil
+   (empty? desc1) nil
+   (= desc1 desc2) 'I
+   (= (rest desc1) (rest desc2)) (let [
+                                       relation ( relationBetween (first desc1) (first desc2))
+                                       ]
+                                   (cond
+                                    (= relation 'NR) 'NR
+                                    :else relation
+                                    )
+
+                                   )
+   (= (rest (rest desc1)) (rest (rest desc2)) ) (let [
+                                                      r1 ( relationBetween (first (rest desc1)) (first (rest desc2)))
+                                                      ]
+                                                  ;(println r1)
+                                   (cond
+                                    (= r1 'NR) 'NR
+                                    :else r1
+                                    )
+
+                                   )
+   :else (let [
+               r2 ( relationBetween (first (rest (rest desc1))) (first (rest (rest desc2))))
+               ]
+           ;(println r2)
+           (cond
+            (= r2 'NR) 'NR
+            :else r2
+            )
+
+           )
+
+   )
+
+
+  )
+
+;creates bridges between descriptor notatios
+(defn bridges [desc1 desc2 bridge]
+
+  (cond
+
+   (empty? desc1) bridge
    :else (cond
 
-          (empty? (first desc2)) nil
-          :else (concat (let [
-                              rel(relationDesc (first desc1) (first desc2))
-                              ]
-                          (cond
+          (empty? desc2) bridge
+          :else (merge
+                 (let [
+                       rel (descriptorMatch (first desc1) (first desc2))
+                       ]
+                   (cond
 
-                           (= -1 (.indexOf rel 'NR)) (cons {(list (first desc1) (first desc2)) rel} (bridges desc1 (rest desc2)) )
-                           :else (concat () (bridges desc1 (rest desc2)))
+                    (= rel 'NR) (bridges desc1 (rest desc2) bridge)
+                    :else (bridges desc1 (rest desc2) (merge bridge {(list (first desc1) (first desc2)) rel}))
 
-                           )
+                    )
 
-                          )
-                        (bridges (rest desc1) desc2)  )
+                   )
+                 (bridges (rest desc1) desc2 bridge))
           )
    )
   )
@@ -329,7 +369,7 @@
     (cond
 
      (empty? sol) nil
-     (seq? f) (do (println "enter" f) (cons (reverse f) (deeprev (rest sol))) )
+     (seq? f) (cons (reverse f) (deeprev (rest sol)))
      :else (cons f (deeprev (rest sol)))
      )
 
@@ -466,7 +506,16 @@
   (cond
 
    (empty? desc) nil
-   :else (cons (get d1 (first desc)) (iter-sol d1 (rest desc)))
+   :else (let [
+               sol (get d1 (first desc))
+               ]
+           (cond
+
+            (= sol nil) (iter-sol d1 (rest desc))
+            :else (cons sol (iter-sol d1 (rest desc)))
+            )
+           )
+
 
    )
 
@@ -480,8 +529,8 @@
         sol (map reverse (map last (into [] set)))
         desc (singlify desc)
         ]
-    (println "desc" desc)
-    (println "sol" (map reverse sol))
+   ; (println "desc" desc)
+    ;(println "sol" (map reverse sol))
     (map reverse sol)
     )
 
@@ -489,13 +538,49 @@
 
 (defn relation-hits [h1 h2]
 
+  ;(println "reln hits" h1 h2)
   (cond
-   (and (empty? h1) (list? h2)) 'supplementary
+   (and (list? h1) (list? h2) (empty? h1)) 'supplementary
    (and (not (list? h1)) (list? h2)) 'supplementary
    (and (list? h1) (not (list? h2))) 'rev-supplementary
-   (and (list? h1) (list? h2) (= h1 h2)) 'Identity
+   (and (list? h1) (list? h2) (= h1 h2)) 'I
+   (= h1 h2) 'I
+   (and  (not (list? h1)) (not (list? h2)) (not= h1 h2)) 'I
    :else 'NR
    )
+
+  )
+
+
+(defn relation-sol-hits [sol1 sol2]
+
+  ;(println "relnsolhits" sol1 sol2)
+  (cond
+
+   (empty? sol2) nil
+   :else (cons (relation-hits (first sol1) (first sol2)) (relation-sol-hits (rest sol1) (rest sol2))  )
+
+   )
+  )
+
+(defn relation-sol [sol1 sol2]
+
+  ;(println "reltion sol" sol1 sol2)
+  (let [
+        relation (relation-sol-hits sol1 sol2)
+        ]
+
+    (cond
+
+     (or (= relation '(I I I I)) (= relation '(I I))) 'I
+     (or (= relation '(I I I supplementary)) (= relation '(I supplementary))) 'supplementary
+     (or  (= relation '(supplementary I I I))  (= relation '(supplementary I))) 'supplementary
+     (or (= relation '(I I I rev-supplementary)) (= relation '(I rev-supplementary))) 'rev-supplementary
+     (or  (= relation '(rev-supplementary I I I))  (= relation '(rev-supplementary I))) 'rev-supplementary
+     :else 'NR
+     )
+
+    )
 
   )
 
@@ -504,8 +589,14 @@
   (cond
 
    (empty? h1) bridges
+   (= nil (first h2)) (bridges-hits (rest t1) (rest t2) (rest h1) (rest h2) bridges)
    :else (let [
-               rln (relation-hits (first h1) (first h2))
+               rln (cond
+
+                     (and (seq? (first h2)) (seq? (first h2))) (relation-sol (first h1) (first h2))
+                     :else  (relation-hits (first h1) (first h2))
+                     )
+
                ]
            (cond
 
@@ -522,19 +613,66 @@
 
   )
 
+(defn form-var-connections [t1 t2 d1 d2 bridges]
+
+  (cond
+
+   (empty? t1) nil
+   :else
+   (let [
+         sol1 (get d1 (first t1))
+         sol2 (get d2 (first t1))
+         rln (cond
+
+
+              (and (seq? sol1) (seq? sol2)) (relation-sol sol1 sol2)
+              :else  (relation-hits sol1 sol2)
+               )
+         ]
+     (cond
+       (= sol2 nil) (form-var-connections (rest t1) (rest t2) (rest d1) (rest d2) bridges)
+      (= rln 'NR) (form-var-connections (rest t1) (rest t2) (rest d1) (rest d2) bridges)
+      :else (form-var-connections (rest t1) (rest t2) (rest d1) (rest d2)
+                                  (merge bridges
+                                         {(list (first t1) (first t1) ) rln}
+                                       )
+                                  )
+      )
+     )
+
+   )
+
+  )
+
+(defn iter-sol2[set list output]
+
+  (cond
+
+   (empty? list) nil
+   (= nil (get set (first list))) (iter-sol2 set (rest list) output)
+   :else (iter-sol2 set (rest list) (merge output {(first list) (get set (first list))}  ) )
+   )
+
+  )
+
+
 (defn reln-hits [d1 d2 bridges]
 
-  (println bridges)
+  ;(println "bridges" bridges)
+  ;(println "d1" d1)
+  ;(println "d2" d2)
   (let [
+        t1 (map first d1)
+        ;d1-sol (iter-sol2 d1 t1)  ;contains the forced desc related to disc
+        d2-sol (iter-sol2 d2 t1 {}) ;contains the discr desc related to forced
 
-        desc (map first bridges) ;contains all the first of bridges
-        reln (map last bridges)
-        t1 (map first desc)
-        t2 (map last desc)
-        d1-sol (iter-sol d1 t1)  ;contains the forced desc related to disc
-        d2-sol (iter-sol d2 t2) ;contains the discr desc related to forced
         ]
-    (bridges-hits t1 t2 d1-sol d2-sol {})
+    (println "bride var hits" )
+    (println d2-sol)
+    (println "bridges with var" (merge bridges d2-sol))
+    (merge bridges d2-sol)
+;    (println (bridges-hits t1 t2 d1-sol d2-sol {}))
+ ;   (bridges-hits t1 t2 d1-sol d2-sol {})
     )
 
   )
@@ -564,9 +702,15 @@
   (cond
    (empty? common) relatn
    :else (let [
-                h1 (get set1 (first common))
-                h2 (get set2 (first common))
-                reln (relation-hits h1 h2)
+               h1 (get set1 (first common))
+               h2 (get set2 (first common))
+               reln (cond
+
+                     (and (seq? h1) (seq? h2)) (relation-sol h1 h2)
+                     :else (relation-hits h1 h2)
+                     )
+
+
 
                 ]
             ;(println "relantion" h1 h2 reln)
@@ -588,13 +732,64 @@
         common (intersection desc1 desc2)
         bridge-same (hit-relation (into () common) set1 set2 {})
         ]
-    (println "common" common)
+    ;(println "common" common)
     bridge-same
     )
 
   )
 
 
+(defn show-supplementary [set]
+
+  (cond
+
+   (empty? set) nil
+   :else (let [
+               identifier (first (first set))
+               val (get (into {} set) identifier)
+               ]
+           ;(println identifier val)
+           (cond
+
+            (= val 'supplementary) (cons identifier (show-supplementary (rest set)) )
+            :else (show-supplementary (rest set))
+            )
+           )
+   )
+
+  )
+
+
+
+(defn show-identity [set]
+
+  (cond
+
+   (empty? set) nil
+   :else (let [
+               identifier (first (first set))
+               val (get (into {} set) identifier)
+               ]
+           ;(println identifier val)
+           (cond
+
+            (= val 'I) (cons identifier (show-identity (rest set)) )
+            :else (show-identity (rest set))
+            )
+           )
+   )
+
+  )
+
+(defn singlifyset [list out]
+
+  (cond
+
+   (empty? list) out
+   :else (singlifyset (rest list) (merge out (first list)))
+   )
+
+  )
 
 (defn createStruct [lists var]
 
@@ -607,26 +802,30 @@
         description (map setToList forced-discr)
         d1 (first description)
         d2 (last description)
-        d1-desc (map first d1)
-        d1-sol (map last d1)
-        d2-desc (map first d2)
-        d2-sol (map last d2)
-        bridge-sol (distinct (bridges d1-desc d2-desc))
-        bridge (setToList-gen bridge-sol)
         d1-set (make-set-lists (singlify d1))
         d2-set (make-set-lists (singlify d2))
-        bridges-var (reln-hits d1-set d2-set bridge)
+        d1-desc (map first d1-set)
+        d1-sol (map last d1-set)
+        d2-desc (map first d2-set)
+        d2-sol (map last d2-set)
+        bridge-desc (bridges d1-desc d2-desc {})
+                                        ;bridge between possible relations based on system's concept of predcessor, successor etc.(needed??)
+        bridges-var (reln-hits d1-set d2-set bridge-desc) ;var hits in the lead
+        merge-bridge (merge bridges-var (bridge-same-desc d1-set d2-set )  )
         ]
 
     ;(println desc-sol)
-    ;(println d2-desc)
-    (println d1-set)
-    (println d2-set)
-    ;(println bridges-var)
+    ;(println d2-sol)
+    ;(println "bridge" bridge-sol)
+    ;(println "d1 set" d1-set)
+    ;(println "d2 set" d2-set)
+    (println bridges-var)
     ;(println bridge-sol)
 
-    (bridge-same-desc d1-set d2-set )
-    (merge (bridge-same-desc d1-set d2-set ) bridges-var)
+                                        ;(bridge-same-desc d1-set d2-set )
+    (println "bridges" merge-bridge)
+    ;(println "show identity bridges" (show-identity (set merge-bridge)))
+    ;(println "show supplementary bridges" (show-supplementary (set merge-bridge)))
     ;(merge (list-to-set bridge-sol {}) bridges-var )
 
     )
