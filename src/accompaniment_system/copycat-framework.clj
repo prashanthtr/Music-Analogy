@@ -816,7 +816,7 @@
 
     ;(println desc-sol)
     ;(println d2-sol)
-    ;(println "bridge" bridge-sol)
+    ;(println "bridge" bridge-sol
     ;(println "d1 set" d1-set)
     ;(println "d2 set" d2-set)
     (println bridges-var)
