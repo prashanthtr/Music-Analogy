@@ -560,7 +560,7 @@
 
 (defn hit-relation [common set1 set2 relatn]
 
-  (println "enter hit-relation" relatn)
+  ;(println "enter hit-relation" relatn)
   (cond
    (empty? common) relatn
    :else (let [
@@ -588,7 +588,7 @@
         common (intersection desc1 desc2)
         bridge-same (hit-relation (into () common) set1 set2 {})
         ]
-    ;common
+    (println "common" common)
     bridge-same
     )
 
@@ -626,7 +626,7 @@
     ;(println bridge-sol)
 
     (bridge-same-desc d1-set d2-set )
-
+    (merge (bridge-same-desc d1-set d2-set ) bridges-var)
     ;(merge (list-to-set bridge-sol {}) bridges-var )
 
     )
