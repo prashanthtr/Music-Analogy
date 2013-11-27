@@ -213,6 +213,10 @@
    (and (= s1 '(middle (last))) (= s2 '(middle (whole))) ) 'supplementary
 
    ;; middle and no middle is also supplementary
+   (and (= s1 'whole) (= s2 'second)) 'NR
+   (and (= s1 'whole) (= s2 'first)) 'NR
+   (and (= s1 'first) (= s2 'whole)) 'NR
+   (and (= s1 'first) (= s2 'whole)) 'NR
 
    :else 'NR ;no relation
 
@@ -644,32 +648,54 @@
 
   )
 
-(defn iter-sol2[set list output]
+(defn iter-sol2[set lists output]
 
   (cond
 
-   (empty? list) nil
-   (= nil (get set (first list))) (iter-sol2 set (rest list) output)
-   :else (iter-sol2 set (rest list) (merge output {(first list) (get set (first list))}  ) )
+   (empty? lists) output
+   (= nil (get set (first lists))) (iter-sol2 set (rest lists) output)
+   :else (iter-sol2 set (rest lists) (merge output {(list (first lists) (first lists)) (relation-hits () (get set (first lists)))}  ) )
    )
 
   )
 
 
+(defn var-descriptors [d1]
+
+  (let [
+        desc (first (first d1))
+        sol (first (rest (first d1)))
+
+        ]
+    ;(println "sol" sol)
+    (cond
+
+     (empty? d1) nil
+     (empty? sol) (cons desc (var-descriptors (rest d1)))
+     :else (var-descriptors (rest d1))
+     )
+
+    )
+
+  )
+
+
+
+;;relates the varialbe positions
 (defn reln-hits [d1 d2 bridges]
 
   ;(println "bridges" bridges)
   ;(println "d1" d1)
   ;(println "d2" d2)
   (let [
-        t1 (map first d1)
+        t1 (var-descriptors d1)
         ;d1-sol (iter-sol2 d1 t1)  ;contains the forced desc related to disc
         d2-sol (iter-sol2 d2 t1 {}) ;contains the discr desc related to forced
 
         ]
-    (println "bride var hits" )
-    (println d2-sol)
-    (println "bridges with var" (merge bridges d2-sol))
+    ;(println "bride var hits" () )
+ ;   (println d2-sol)
+  ;  (println "bridges with var" (merge bridges d2-sol))
     (merge bridges d2-sol)
 ;    (println (bridges-hits t1 t2 d1-sol d2-sol {}))
  ;   (bridges-hits t1 t2 d1-sol d2-sol {})
@@ -810,8 +836,9 @@
         d2-sol (map last d2-set)
         bridge-desc (bridges d1-desc d2-desc {})
                                         ;bridge between possible relations based on system's concept of predcessor, successor etc.(needed??)
-        bridges-var (reln-hits d1-set d2-set bridge-desc) ;var hits in the lead
-        merge-bridge (merge bridges-var (bridge-same-desc d1-set d2-set )  )
+        bridges-var (reln-hits d1-set d2-set {}) ;var hits in the lead
+        same-desc (bridge-same-desc d1-set d2-set )
+        merge-bridge (merge bridge-desc same-desc bridges-var)
         ]
 
     ;(println desc-sol)
@@ -819,13 +846,17 @@
     ;(println "bridge" bridge-sol
     ;(println "d1 set" d1-set)
     ;(println "d2 set" d2-set)
-    (println bridges-var)
-    ;(println bridge-sol)
+    ;(println "bridge desc" bridge-desc)
+    ;(println "bridge var " bridges-var)
+    ;(println "same desc" same-desc)
 
                                         ;(bridge-same-desc d1-set d2-set )
-    (println "bridges" merge-bridge)
-    ;(println "show identity bridges" (show-identity (set merge-bridge)))
-    ;(println "show supplementary bridges" (show-supplementary (set merge-bridge)))
+    (println "Bridges")
+    (display merge-bridge)
+    (println "show identity bridges")
+    (display (show-identity (set merge-bridge)))
+    (println "show supplementary bridges")
+    (display (show-supplementary (set merge-bridge)))
     ;(merge (list-to-set bridge-sol {}) bridges-var )
 
     )
