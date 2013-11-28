@@ -732,7 +732,7 @@
                                         ;(var-sub (apply-rule-map (mriMap mSol)) pos 0 subst)
                ;(notChangeRule (distinct (concat (positions mSol) (nonAccentPos mSol accent 0 ) )) accent)
                ]
-           (println "main" pos newSol (all-combinations pos 0))
+           ;(println "main" pos newSol (all-combinations pos 0))
            (let [
                  comb-pos (all-combinations pos 0)
                  output (map apply-rule-map (concat (generation-multi-subst newSol comb-pos subst 0) (main mSol (rest comb) subst)))]

@@ -1,9 +1,9 @@
-;(load-file "src/accompaniment_system/generate.clj")
+(load-file "src/accompaniment_system/generate.clj")
 
 
 (defn ret-sound [sol]
 
-  (println sol)
+  ;(println sol)
   (let [randomN (rand-int 2) kick (load-sample (freesound-path 2086)) tum (load-sample "src/accompaniment_system/audio/tum.wav" ) ta (load-sample "src/accompaniment_system/audio/ta.wav" ) nam (load-sample "src/accompaniment_system/audio/num.wav" ) dhin (load-sample "src/accompaniment_system/audio/dhin.wav" ) the (load-sample "src/accompaniment_system/audio/thi.wav" ) te (load-sample "src/accompaniment_system/audio/te.wav" ) ]
 
     (cond
@@ -34,8 +34,8 @@
 ;;stubs for testing
 (defn newSol []
 
-(random-subst  '((ta tum tum ta ta tum tum ta)
-                   (ta tum . ta ta tum . ta)
+(random-subst  '((ta tum tum (ta te) ta tum tum ta)
+                   (ta tum (ta te) ta ta tum . ta)
                    ))
   )
 
@@ -85,7 +85,7 @@
 
 (defn ret-seq []
 
-  '(tum . tum ta ta tum tum ta)
+  '(tum (ta te) tum ta ta tum tum ta)
 
   )
 
@@ -123,23 +123,145 @@
   (*  (/ 60 tempo) 1000)
 
   )
+
+(defn pat-vol [pat vol]
+
+  (cond
+
+   (empty? pat) nil
+   (list? (first pat)) (concat (list (first vol) (first vol)) (pat-vol (rest pat) (rest vol)) )
+   :else (cons (first vol) (pat-vol (rest pat) (rest vol)))
+
+   )
+
+  )
+
+
+
+(defn create-schedule [speed tempo st ctr]
+
+  (cond
+
+   (> st (lengthList speed 0)) nil
+   (= st 0) (cons ctr (create-schedule speed tempo (+ st 1) ctr))
+   :else (cons (+ ctr (charAtPos speed (- st 1) 0)) (create-schedule speed tempo (+ st 1) (+ ctr (charAtPos speed (- st 1) 0)))  )
+   )
+
+  )
+
 ;;interprets the hits on the pattern based as single or double and plays them
-(defn pattern-play [tempo volume]
+(defn pattern-play [tempo pat forced-vol]
 
-  (let [vol (list2Vec volume) tmp (ret-seq) speed (list2Vec (time-hit tempo tmp)) pattern (list2Vec (d2Sr tmp)) ]
+  (let [vol (pat-vol pat forced-vol) tmp pat speed (list2Vec (time-hit tempo tmp)) schedule (create-schedule speed tempo 0 0) pattern (list2Vec (d2Sr tmp))  ]
 
-    (dorun (map-indexed (fn [i n] (at (+ (now) (* i (nth speed i))) (play-sample (ret-sound n) (nth vol i)))) pattern))
+    ;(println pattern)
 
+    (dorun (map-indexed (fn [i n] (at (+ (now) (nth schedule i)) (play-sample (ret-sound n) (nth vol i)))) pattern))
     )
 
   )
 
 
+(defn ret-mr []
+
+  '(nam dhin dhin (nam ta) nam dhin dhin nam)
+
+  )
+
+(defn mr-play [tempo volume]
+
+  (let [vol (list2Vec volume) tmp (ret-mr) speed (list2Vec (time-hit tempo tmp)) schedule (create-schedule speed tempo 0 0) pattern (list2Vec (d2Sr tmp)) ]
+
+    (dorun (map-indexed (fn [i n] (at (+ (now) (nth schedule i)) (play-sample (ret-sound n) (nth vol i)))) pattern))
+
+    )
+
+  )
+
+(def loud '(0.9 0.8 0.8 0.9 0.9 0.8 0.8 0.9))
+;(pattern-play 300 '(nam dhin dhin (nam ta) nam dhin dhin nam) loud )
+;(pattern-play 300 '(ta tum tum (ta te) ta tum tum ta) loud )
+
+(def mr '(nam dhin dhin (nam thi) nam dhin dhin nam))
+(def kan '(ta tum tum (ta te) ta tum tum ta))
+(def nome (metronome 200))
+
+
+(defn kselect [mr]
+
+  (let [
+        forced (mriMap mr)
+        discr (main mr '((0 4)) {'. '?p '(ta te) '?d '(te ta) '?d '(ta tum) '?d '(tum tum) '?d '(tum ta) '?d  'tum '?nA 'ta '?nA 'te '?nA}  )
+        list (cons forced discr)
+        random (random-subst list 0)
+
+        ]
+    ;(println random)
+    (println random)
+    random
+    )
+
+  )
+
 ;;loops the metronome at specified tempo, selects a pattern every 8 beats and plays it
-(defn looper [nome volume]
+(defn looper [mr st]
+  (let [beat (nome)]
+    ;(println mr)
+    ;(println (metro-tick nome))
+    (at (nome beat) (pattern-play (metro-tick nome) mr loud))
+
+    (cond
+
+    (> (nome) (+ 32 st)) nil
+     :else (apply-at (nome (+ 8 beat)) #'looper mr st []))
+
+   )
+
+  )
+
+(defn looper1 [mr st]
+  (let [beat (nome)]
+    ;(println (kselect mr))
+    ;(println (metro-tick nome))
+    (at (nome beat) (pattern-play (metro-tick nome) (kselect mr) loud))
+    (cond
+
+     (> (nome) (+ 32 st)) nil
+     :else (apply-at (nome (+ 8 beat)) #'looper1 mr st []))
+
+     )
+  )
+
+;(looper (metronome 200))
+;(looper1 (metronome 200))
+
+
+(defn mridangam [mSol]
+
   (let [beat (nome)]
 
-    (println (metro-tick nome))
-    (at (nome beat) (pattern-play (metro-tick nome) volume))
-    (apply-at (nome (+ 9 beat)) looper nome volume []))
+    (looper mSol beat)
+    (looper1 mSol beat)
+
+    )
+
+
   )
+
+
+(defn record []
+  (println "User Input" (nome))
+  )
+
+
+(on-event [:midi :note-on]
+          (fn [e]
+            (let [note (:note e)
+                  vel  (:velocity e)
+                  time (:timeStamp e)
+                  ]
+              (record)
+              ))
+          ::keyboard-handler)
+
+;(mridangam '(nam dhin dhin (nam ta) nam dhin dhin nam))

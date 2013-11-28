@@ -150,7 +150,7 @@
         middle '(middle)
         b3 (cond
 
-            (and (list? (first mid)) (list? (first sol)) ) (merge b2 {(cons (cons '(whole) middle) var) mid})
+            (and (list? (first mid)) (list? (last mid)) ) (merge b2 {(cons (cons '(whole) middle) var) mid})
             (list? (first mid)) (merge b2 {(cons (cons '(first) middle) var) (first mid) })
             (list? (last mid)) (merge b2 { (cons (cons '(last) middle) var) (last mid)})
             :else b2
@@ -203,8 +203,8 @@
    (and (= s1 'last) (= s2 'first)) 'predecessor
 
    (and (= s1 '(middle (last))) (= s2 '(first))) 'predecessor
-   (and (= s2 '(middle (last))) (= s1 '(first))) 'sucessor
-   (and (= s1 '(middle (first))) (= s2 '(last))) 'sucessor
+   (and (= s2 '(middle (last))) (= s1 '(first))) 'successor
+   (and (= s1 '(middle (first))) (= s2 '(last))) 'successor
    (and (= s2 '(middle (first))) (= s1 '(last))) 'predecessor
 
    (and (= s1 '(middle (whole))) (= s2 '(middle (first))) ) 'rev-supplementary
@@ -786,6 +786,19 @@
   )
 
 
+(defn show-symmetry [set]
+
+  (let [
+        identifier (first (first (first set)))
+        ]
+    (cond
+     (empty? set) nil
+     (or (= identifier '(whole opp)) (= identifier '(whole same)) (= identifier '(first opp)) (= identifier '(first same)) (= identifier '(second opp)) (= identifier '(second same))) (cons identifier (show-symmetry (rest set)))
+     :else (show-symmetry (rest set))
+     )
+    )
+
+  )
 
 (defn show-identity [set]
 
@@ -807,12 +820,97 @@
 
   )
 
+(defn show-pred-succ [set]
+
+  (cond
+
+   (empty? set) nil
+   :else (let [
+               identifier (first (first set))
+               val (get (into {} set) identifier)
+               ]
+           ;(println identifier val)
+           (cond
+
+            (or (= val 'predecessor) (= val 'successor)) (cons identifier (show-identity (rest set)) )
+            :else (show-identity (rest set))
+            )
+           )
+   )
+
+  )
+
+
+
+(defn show-pattern-level-symm [set]
+
+    (cond
+
+     (empty? set) nil
+     :else (let [
+                 identifier (first (first set))
+                 val (get (into {} set) identifier)
+                 ]
+                                        ;(println identifier val)
+             (cond
+
+              (or (= identifier '(whole equal)) (= identifier '(first equal)) (= identifier '(second equal)) ) (cons identifier (show-pattern-level-symm (rest set)) )
+              :else (show-pattern-level-symm (rest set))
+              )
+             )
+     )
+
+
+  )
+
+
 (defn singlifyset [list out]
 
   (cond
 
    (empty? list) out
    :else (singlifyset (rest list) (merge out (first list)))
+   )
+
+  )
+
+
+(defn pattern-level-reln [sol1 sol2 bindings]
+
+  (let [
+
+        s1 (cond
+                   (= sol1 sol2) (merge bindings {'(whole equal) sol1 }  )
+                   )
+        half-sol1 (subsequ sol1 0 3 0)
+        half-sol2 (subsequ sol2 0 3 0)
+        s2 (cond
+                        (= half-sol1 half-sol2) (merge s1 {'(first equal) half-sol1 }  )
+                        )
+        half-sol1 (subsequ sol1 4 7 0)
+        half-sol2 (subsequ sol2 4 7 0)
+        s3 (cond
+                        (= half-sol1 half-sol2) (merge s2 {'(second equal) half-sol1 }  )
+                        )
+        ]
+    ;(println sol1)
+    s3
+    )
+  )
+
+
+
+(defn score-list [list score]
+
+  (cond
+
+   (empty? list) score
+   :else (cond
+
+          (= (first list) '(whole equal)) (score-list (rest list) (- score 10000))
+          (= (first (first list)) 'whole) (score-list (rest list) (- score 2))
+          (or (= (first (first list)) 'first) (= (first (first list)) 'second)) (score-list (rest list) (- score 1))
+          )
    )
 
   )
@@ -838,27 +936,74 @@
                                         ;bridge between possible relations based on system's concept of predcessor, successor etc.(needed??)
         bridges-var (reln-hits d1-set d2-set {}) ;var hits in the lead
         same-desc (bridge-same-desc d1-set d2-set )
-        merge-bridge (merge bridge-desc same-desc bridges-var)
+        equality (pattern-level-reln (first lists) (last lists) {})
+        merge-bridge (merge bridge-desc same-desc bridges-var equality)
         ]
 
     ;(println desc-sol)
     ;(println d2-sol)
     ;(println "bridge" bridge-sol
     ;(println "d1 set" d1-set)
-    ;(println "d2 set" d2-set)
+    ;(println "d2 " d2)
     ;(println "bridge desc" bridge-desc)
     ;(println "bridge var " bridges-var)
     ;(println "same desc" same-desc)
 
                                         ;(bridge-same-desc d1-set d2-set )
-    (println "Bridges")
-    (display merge-bridge)
-    (println "show identity bridges")
+    ;(println "Bridges")
+    ;(display merge-bridge)
+
+    (println "Pattern level symmetry")
+    (display (show-pattern-level-symm merge-bridge))
+    (println "Identity bridges")
     (display (show-identity (set merge-bridge)))
-    (println "show supplementary bridges")
+    (println "Symmetry")
+    (display (show-symmetry (set merge-bridge)))
+    (println "Supplementary bridges")
     (display (show-supplementary (set merge-bridge)))
+    (println "Predecessor Succesor Bridges")
+    (display (show-pred-succ (set merge-bridge)))
     ;(merge (list-to-set bridge-sol {}) bridges-var )
 
+
+    (let [
+          equality (show-pattern-level-symm merge-bridge)
+          identity (map first (show-identity (set merge-bridge)))
+          symm (show-symmetry merge-bridge)
+          suppl (show-supplementary (set merge-bridge))
+          pred-succ (show-pred-succ (set merge-bridge))
+          score ( score-list equality 0)
+          score ( score-list symm score )
+          score ( score-list identity score )
+          score (+ score (lengthList suppl 0) )
+          score (+ score (lengthList pred-succ 0) )
+          ]
+      score
+      )
+
+    )
+
+  )
+
+
+(defn assign-scores [forced disc var]
+
+  (cond
+
+   (empty? disc) nil
+   :else (do (println (first disc) (createStruct (list forced (first disc)) var) ) (assign-scores forced (rest disc) var ))
+   )
+
+  )
+
+(defn gen-select [mSol accent subst]
+
+  (let [
+        disc-improv (main mSol accent subst)
+        forced (mriMap mSol)
+        var-hits (positions mSol)
+        ]
+    (assign-scores forced disc-improv var-hits)
     )
 
   )
