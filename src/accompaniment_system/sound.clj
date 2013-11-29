@@ -3,7 +3,7 @@
 
 (defn ret-sound [sol]
 
-  ;(println sol)
+  (println sol)
   (let [randomN (rand-int 2) kick (load-sample (freesound-path 2086)) tum (load-sample "src/accompaniment_system/audio/tum.wav" ) ta (load-sample "src/accompaniment_system/audio/ta.wav" ) num (load-sample "src/accompaniment_system/audio/num.wav" ) dhin (load-sample "src/accompaniment_system/audio/dhin.wav" ) thi (load-sample "src/accompaniment_system/audio/thi.wav" ) te (load-sample "src/accompaniment_system/audio/te.wav" ) song (load-sample "src/accompaniment_system/audio/song.wav") ]
 
     (cond
@@ -137,8 +137,6 @@
 
   )
 
-
-
 (defn create-schedule [speed tempo st ctr]
 
   (cond
@@ -155,7 +153,7 @@
 
   (let [vol (pat-vol pat forced-vol) tmp pat speed (list2Vec (time-hit tempo tmp)) schedule (create-schedule speed tempo 0 0) pattern (list2Vec (d2Sr tmp))  ]
 
- ;   (println pat)
+    ;(println pat)
 
     (dorun (map-indexed (fn [i n] (at (+ (now) (nth schedule i)) (play-sample (ret-sound n) (nth vol i)))) pattern))
     )
@@ -241,14 +239,14 @@
 ;;loops the metronome at specified tempo, selects a pattern every 8 beats and plays it
 (defn looper [st]
   (let [beat (nome)]
-    (println mr)
+    ;(println mr)
     ;(println (metro-tick nome))
     (at (nome beat) (pattern-play (metro-tick nome) mr loud))
 
     (cond
 
-    (> (nome) (+ 16.25 st)) (apply-at (nome (+ 8.25 beat)) #'looper st [])
-    :else (apply-at (nome (+ 8.25 beat)) #'looper st [])
+    (> (nome) (+ 16 st)) (apply-at (nome (+ 8 beat)) #'looper st [])
+    :else (apply-at (nome (+ 8 beat)) #'looper st [])
     )
 
    )
@@ -257,7 +255,7 @@
 
 (defn looper1 [st]
   (let [beat (nome)]
-    (println (kselect mr st beat))
+    ;(println (kselect mr st beat))
     ;(println (metro-tick nome))
     (at (nome beat) (pattern-play (metro-tick nome) (mrMap mr) loud))
     (cond
@@ -278,8 +276,8 @@
   (let [beat (nome)]
 
     (at (nome (- beat 1)) (play-sample (load-sample "src/accompaniment_system/audio/song.wav") 0.6) )
-    (looper (+ beat 0.25))
-    (looper1 (+ beat 0))
+    (looper beat)
+    (looper1 (- beat 1))
 
     )
 
