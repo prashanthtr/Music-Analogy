@@ -192,7 +192,8 @@
 
       (empty? mSol) nil
       (= '. (first mSol)) '.
-      (or (= 'num (first mSol) ) (= 'dham (first mSol) ) (= 'dhin (first mSol) ) (= 'dheem (first mSol) )) 'tum
+      (or (= 'dham (first mSol) ) (= 'dhin (first mSol) ) (= 'dheem (first mSol) )) 'tum
+      (= 'num (first mSol) ) 'ta
       (list? (first mSol)) '(ta te) ;;choice between te ta, tum ta and ta te
       :else 'ta
       )

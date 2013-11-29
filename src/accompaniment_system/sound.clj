@@ -4,16 +4,17 @@
 (defn ret-sound [sol]
 
   ;(println sol)
-  (let [randomN (rand-int 2) kick (load-sample (freesound-path 2086)) tum (load-sample "src/accompaniment_system/audio/tum.wav" ) ta (load-sample "src/accompaniment_system/audio/ta.wav" ) nam (load-sample "src/accompaniment_system/audio/num.wav" ) dhin (load-sample "src/accompaniment_system/audio/dhin.wav" ) the (load-sample "src/accompaniment_system/audio/thi.wav" ) te (load-sample "src/accompaniment_system/audio/te.wav" ) ]
+  (let [randomN (rand-int 2) kick (load-sample (freesound-path 2086)) tum (load-sample "src/accompaniment_system/audio/tum.wav" ) ta (load-sample "src/accompaniment_system/audio/ta.wav" ) num (load-sample "src/accompaniment_system/audio/num.wav" ) dhin (load-sample "src/accompaniment_system/audio/dhin.wav" ) thi (load-sample "src/accompaniment_system/audio/thi.wav" ) te (load-sample "src/accompaniment_system/audio/te.wav" ) song (load-sample "src/accompaniment_system/audio/song.wav") ]
 
     (cond
 
      (= 'tum sol) tum
      (= 'ta sol) ta
-     (= 'nam sol) nam
+     (= 'num sol) num
      (= 'dhin sol) dhin
-     (= 'the sol) the
+     (= 'thi sol) thi
      (= 'te sol) te
+     (= 'song sol) song
      :else nil
      )
 
@@ -69,7 +70,7 @@
 
 
 (def metrono (metronome 200))
-(def mridangam '(nam the dhin dhin . dhin dhin (nam the)))
+(def mridangam '(num the dhin dhin . dhin dhin (num the)))
 (def volum '(0.9 0.3 0.3 0.3 0.5 0.3 1 0.3 0.25 0.3 0.5 0.3 1 0.2 0.5 0.5))
 (def vol-system4 '(0.9 0.3 0.5 1 0.25 0.5 1 0.5))
 
@@ -154,7 +155,7 @@
 
   (let [vol (pat-vol pat forced-vol) tmp pat speed (list2Vec (time-hit tempo tmp)) schedule (create-schedule speed tempo 0 0) pattern (list2Vec (d2Sr tmp))  ]
 
-    ;(println pattern)
+ ;   (println pat)
 
     (dorun (map-indexed (fn [i n] (at (+ (now) (nth schedule i)) (play-sample (ret-sound n) (nth vol i)))) pattern))
     )
@@ -164,7 +165,7 @@
 
 (defn ret-mr []
 
-  '(nam dhin dhin (nam ta) nam dhin dhin nam)
+  '(num dhin dhin (num ta) num dhin dhin num)
 
   )
 
@@ -179,55 +180,91 @@
   )
 
 (def loud '(0.9 0.8 0.8 0.9 0.9 0.8 0.8 0.9))
-;(pattern-play 300 '(nam dhin dhin (nam ta) nam dhin dhin nam) loud )
+;(pattern-play 300 '(num dhin dhin (num ta) num dhin dhin num) loud )
 ;(pattern-play 300 '(ta tum tum (ta te) ta tum tum ta) loud )
 
-(def mr '(nam dhin dhin (nam thi) nam dhin dhin nam))
+(def mr '(num dhin dhin (num thi) num dhin dhin num))
 (def kan '(ta tum tum (ta te) ta tum tum ta))
-(def nome (metronome 200))
+(def nome (metronome 136))
 
 
-(defn kselect [mr]
+(defn kselect [mr st beat]
 
   (let [
-        forced (mriMap mr)
+        forced (apply-rule-map (mriMap mr) )
         discr (main mr '((0 4)) {'. '?p '(ta te) '?d '(te ta) '?d '(ta tum) '?d '(tum tum) '?d '(tum ta) '?d  'tum '?nA 'ta '?nA 'te '?nA}  )
         list (cons forced discr)
         random (random-subst list 0)
-
+        beat-no (- beat st)
+        bar-no (float (/ beat-no 8))
         ]
+                                        ;(println random)
+    (println "Bar" (clojure.contrib.math/floor bar-no) )
     ;(println random)
-    (println random)
-    random
+    forced
     )
 
   )
 
+
+
+(defn mrMap [mSol]
+
+
+   (cond
+
+    (empty? mSol) nil
+    (= '. (first mSol)) (cons '. (mrMap (rest mSol)))
+    (or (= 'dham (first mSol) ) (= 'dhin (first mSol) ) (= 'dheem (first mSol) )) (cons 'tum (mrMap (rest mSol)))
+    (= 'num (first mSol) ) (cons 'ta (mrMap (rest mSol)))
+    (list? (first mSol)) (cons '(ta te) (mrMap (rest mSol))) ;;choice between te ta, tum ta and ta te
+    :else (cons 'ta (mrMap (rest mSol)))
+    )
+
+  )
+
+(defn forced [mr st beat]
+
+
+  (let [
+        forced (apply-rule-map (mrMap mr))
+        ;beat-no (- beat st)
+        ;bar-no (float (/ beat-no 8))
+        ]
+    ;(println "Bar" (clojure.contrib.math/floor bar-no) )
+    forced
+    )
+  )
+
+
+(def mr '(num dhin dhin num num dhin dhin num))
 ;;loops the metronome at specified tempo, selects a pattern every 8 beats and plays it
-(defn looper [mr st]
+(defn looper [st]
   (let [beat (nome)]
-    ;(println mr)
+    (println mr)
     ;(println (metro-tick nome))
     (at (nome beat) (pattern-play (metro-tick nome) mr loud))
 
     (cond
 
-    (> (nome) (+ 32 st)) nil
-     :else (apply-at (nome (+ 8 beat)) #'looper mr st []))
+    (> (nome) (+ 16.25 st)) (apply-at (nome (+ 8.25 beat)) #'looper st [])
+    :else (apply-at (nome (+ 8.25 beat)) #'looper st [])
+    )
 
    )
 
   )
 
-(defn looper1 [mr st]
+(defn looper1 [st]
   (let [beat (nome)]
-    ;(println (kselect mr))
+    (println (kselect mr st beat))
     ;(println (metro-tick nome))
-    (at (nome beat) (pattern-play (metro-tick nome) (kselect mr) loud))
+    (at (nome beat) (pattern-play (metro-tick nome) (mrMap mr) loud))
     (cond
 
-     (> (nome) (+ 32 st)) nil
-     :else (apply-at (nome (+ 8 beat)) #'looper1 mr st []))
+     (> (nome) (+ 16 st)) (apply-at (nome (+ 8 beat)) #'looper1 st [])
+     :else (apply-at (nome (+ 8 beat)) #'looper1 st [])
+     )
 
      )
   )
@@ -236,15 +273,15 @@
 ;(looper1 (metronome 200))
 
 
-(defn mridangam [mSol]
+(defn mridangam []
 
   (let [beat (nome)]
 
-    (looper mSol beat)
-    (looper1 mSol beat)
+    (at (nome (- beat 1)) (play-sample (load-sample "src/accompaniment_system/audio/song.wav") 0.6) )
+    (looper (+ beat 0.25))
+    (looper1 (+ beat 0))
 
     )
-
 
   )
 
@@ -253,6 +290,7 @@
   (println "User Input" (nome))
   )
 
+(def keyboard (midi-in "MidiKeys"))
 
 (on-event [:midi :note-on]
           (fn [e]
@@ -264,4 +302,17 @@
               ))
           ::keyboard-handler)
 
-;(mridangam '(nam dhin dhin (nam ta) nam dhin dhin nam))
+;(mridangam '(num dhin dhin num num dhin dhin num))
+;(mridangam '(num dhin dhin (num thi) (num thi) dhin dhin num))
+;(mridangam '(num dhin dhin (num thi) (num thi) dhin dhin num))
+;(mridangam '(num dhin (num dhin) (. thi) (num thi) dhin (num dhin) (. thi)))
+;(mridangam '(num dhin dhin (num thi) dhin num dhin (num thi))
+
+
+;(def mr '(num dhin dhin (num thi) (num thi) dhin dhin num))
+;(def mr '(num dhin (num dhin) . (num thi) dhin (num dhin) (. thi)))
+;(def mr '(num dhin dhin (num thi) dhin num dhin (num thi)) )
+
+
+;; rule problem: all num and dhin are always mapped on to tumki
+;; there are instances where they are mapped on to ta (num atleast)
