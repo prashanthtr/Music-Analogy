@@ -1,9 +1,9 @@
-(load-file "src/accompaniment_system/generate.clj")
+;(load-file "src/accompaniment_system/generate.clj")
 
 
 (defn ret-sound [sol]
 
-  (println sol)
+  ;(println sol)
   (let [randomN (rand-int 2) kick (load-sample (freesound-path 2086)) tum (load-sample "src/accompaniment_system/audio/tum.wav" ) ta (load-sample "src/accompaniment_system/audio/ta.wav" ) num (load-sample "src/accompaniment_system/audio/num.wav" ) dhin (load-sample "src/accompaniment_system/audio/dhin.wav" ) thi (load-sample "src/accompaniment_system/audio/thi.wav" ) te (load-sample "src/accompaniment_system/audio/te.wav" ) song (load-sample "src/accompaniment_system/audio/song.wav") ]
 
     (cond
@@ -153,7 +153,7 @@
 
   (let [vol (pat-vol pat forced-vol) tmp pat speed (list2Vec (time-hit tempo tmp)) schedule (create-schedule speed tempo 0 0) pattern (list2Vec (d2Sr tmp))  ]
 
-    ;(println pat)
+    (println pat vol)
 
     (dorun (map-indexed (fn [i n] (at (+ (now) (nth schedule i)) (play-sample (ret-sound n) (nth vol i)))) pattern))
     )
@@ -190,8 +190,8 @@
 
   (let [
         forced (apply-rule-map (mriMap mr) )
-        discr (main mr '((0 4)) {'. '?p '(ta te) '?d '(te ta) '?d '(ta tum) '?d '(tum tum) '?d '(tum ta) '?d  'tum '?nA 'ta '?nA 'te '?nA}  )
-        list (cons forced discr)
+        ;discr (main mr '((0 4)) {'. '?p '(ta te) '?d '(te ta) '?d '(ta tum) '?d '(tum tum) '?d '(tum ta) '?d  'tum '?nA 'ta '?nA 'te '?nA}  )
+        list (cons forced ())
         random (random-subst list 0)
         beat-no (- beat st)
         bar-no (float (/ beat-no 8))
@@ -226,10 +226,10 @@
 
   (let [
         forced (apply-rule-map (mrMap mr))
-        ;beat-no (- beat st)
-        ;bar-no (float (/ beat-no 8))
+        beat-no (- beat st)
+        bar-no (float (/ beat-no 8))
         ]
-    ;(println "Bar" (clojure.contrib.math/floor bar-no) )
+    (println "Bar" (clojure.contrib.math/floor bar-no) )
     forced
     )
   )
@@ -257,7 +257,7 @@
   (let [beat (nome)]
     ;(println (kselect mr st beat))
     ;(println (metro-tick nome))
-    (at (nome beat) (pattern-play (metro-tick nome) (mrMap mr) loud))
+    (at (nome beat) (pattern-play (metro-tick nome) (forced mr st beat) loud))
     (cond
 
      (> (nome) (+ 16 st)) (apply-at (nome (+ 8 beat)) #'looper1 st [])

@@ -755,7 +755,7 @@
   (let [
         desc1 (set (map first set1))
         desc2 (set (map first set2))
-        common (intersection desc1 desc2)
+        common (clojure.set/intersection desc1 desc2)
         bridge-same (hit-relation (into () common) set1 set2 {})
         ]
     ;(println "common" common)
