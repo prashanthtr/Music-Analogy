@@ -234,7 +234,7 @@
         first-r1 (subsequ r1 0 (- (/ l1 2) 1) 0)
         first-r2 (subsequ r2 0 (- (/ l2 2) 1) 0)
         last-r1 (subsequ r1 (/ l1 2) (- l1 1) 0)
-        last-r2 (subsequ r1 (/ l2 2) (- l2 1) 0)
+        last-r2 (subsequ r2 (/ l2 2) (- l2 1) 0)
         score-first (score-measure-link first-r1 first-r2)
         score-last (score-measure-link last-r1 last-r2)
         ]
@@ -267,7 +267,7 @@
 
   (cond
 
-   (> ctr (lengthList rhythm 0)) dh-link
+   (> ctr (lengthList rhythm 0)) (into {} (into [] (sort (into [] dh-link))))
    (and (list? (charAtPos rhythm ctr 0)) (list? (charAtPos rhythm (+ ctr 1) 0))) (activity-links rhythm (merge {ctr (+ ctr 1)} dh-link  ) (+ ctr 1))
   :else (activity-links rhythm dh-link (+ ctr 1))
 
@@ -289,6 +289,7 @@
         ]
 
     (cond
+     (= st nil) links
      (> ctr (lengthList dh-link 0)) (let [
 
                                           len (+ (- cur st) 1)
@@ -317,7 +318,10 @@
   (let [
 
         act-link (activity-links r1 {} 0)
-        st (first (into [] (charAtPos act-link 0 0)))
+        st (cond
+            (empty? act-link) nil
+            :else (first (into [] (charAtPos act-link 0 0)))
+            )
         activity-descr (activity-len act-link st st {} 1)
         ]
     activity-descr
@@ -344,8 +348,22 @@
         act-desc-r2 (mapTosetVector (note-activity r2))
         intersection (clojure.set/intersection act-desc-r1 act-desc-r2)
         intersection-map (setVectorTomap intersection)
+        intersection-map (cond
+
+                          (empty? intersection-map) {}
+                          :else (merge {'Identical 'NA} intersection-map)
+                          )
+        difference (cons (clojure.set/difference act-desc-r1 act-desc-r2) (clojure.set/difference act-desc-r2 act-desc-r1))
+        difference-map (setVectorTomap difference)
+        difference-map (cond
+
+                        (empty? difference-map) {}
+                        :else (merge {'diff 'NA} difference-map)
+                        )
         ]
-    (merge intersection-map links)
+    (println difference)
+    (merge intersection-map links difference-map)
+
     )
 
   )
@@ -355,13 +373,10 @@
   (let [
 
         measure-links (tag-measure r1 r2 0)
-        ;measure-links (start-relationship r1 r2 measure-links)
-        ;measure-links (common-note-activity r1 r2 measure-links)
+        measure-links (start-relationship r1 r2 measure-links)
+        measure-links (common-note-activity r1 r2 measure-links)
         ]
     measure-links
     )
 
   )
-
-
-;; there is a descriptor for note activity that gives actiity position and length
