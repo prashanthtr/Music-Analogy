@@ -29,13 +29,25 @@
   )
 
 
+(defn pat-vol [pat vol]
+
+  (cond
+
+   (empty? pat) nil
+   (list? (first pat)) (concat (list (first vol) (first vol)) (pat-vol (rest pat) (rest vol)) )
+   :else (cons (first vol) (pat-vol (rest pat) (rest vol)))
+
+   )
+
+  )
+
 
 ;;interprets the hits on the pattern based as single or double and plays them
 (defn pattern-play [tempo pat forced-vol]
 
   (let [vol (pat-vol pat forced-vol) tmp pat speed (list2Vec (time-hit tempo tmp)) schedule (create-schedule speed tempo 0 0) pattern (list2Vec (d2Sr tmp))  ]
 
-    (println pat vol)
+  (println pat vol)
 
     (dorun (map-indexed (fn [i n] (at (+ (now) (nth schedule i)) (play-sample (ret-sound n) (nth vol i)))) pattern))
     )
@@ -61,6 +73,8 @@
 
   )
 
+
+
 (defn forced [mr st beat]
 
 
@@ -77,28 +91,34 @@
 
 ;(pattern-play 300 '(ta tum tum (ta te) ta tum tum ta) loud )
 
+;(def mri '(ta tum tum (ta te) ta tum tum tum))
+(def loudne '(0.75 0.5 0.5 1 0.5 0.5 1 0.5))
+
 ;;loops the metronome at specified tempo, selects a pattern every 8 beats and plays it
 (defn looper [st]
   (let [beat (nome)]
     ;(println mr)
     ;(println (metro-tick nome))
-    (at (nome beat) (pattern-play (metro-tick nome) mr loud))
+    (at (nome beat) (pattern-play (metro-tick nome) mri loudne))
 
     (cond
 
-    (> (nome) (+ 16 st)) (apply-at (nome (+ 32 beat)) #'looper st [])
-    :else (apply-at (nome (+ 32 beat)) #'looper st [])
+    (> (nome) (+ 16 st)) (apply-at (nome (+ 9 beat)) #'looper st [])
+    :else (apply-at (nome (+ 9 beat)) #'looper st [])
     )
 
    )
 
   )
 
+'((ta tum tum (ta te) (ta te) tum tum ta) (ta tum tum (ta te) (ta te) tum tum tum) (ta tum tum (ta te) ta tum tum ta) (ta tum tum (ta te) ta tum tum tum) (ta tum tum ta (ta te) tum tum ta) (ta tum tum ta (ta te) tum tum tum) (ta tum tum ta ta tum tum ta) (ta tum tum ta ta tum tum tum) (tum tum tum (ta te) (ta te) tum tum ta) (tum tum tum (ta te) (ta te) tum tum tum) (tum tum tum (ta te) ta tum tum ta) (tum tum tum (ta te) ta tum tum tum) (tum tum tum ta (ta te) tum tum ta) (tum tum tum ta (ta te) tum tum tum) (tum tum tum ta ta tum tum ta) (tum tum tum ta ta tum tum tum))
+
+
 (defn looper1 [st]
   (let [beat (nome)]
     ;(println (kselect mr st bea(stopt))
     ;(println (metro-tick nome))
-    (at (nome beat) (pattern-play (metro-tick nome) (forced mr st beat) loud))
+    (at (nome beat) (pattern-play (metro-tick nome) mri loudness))
     (cond
 
      (> (nome) (+ 16 st)) (apply-at (nome (+ 32 beat)) #'looper1 st [])
@@ -110,11 +130,11 @@
 
 (defn play-all []
 
-(let [beat (nome)]
+  (let [beat (nome)]
 
-    (at (nome (- beat 1)) (play-sample (load-sample "src/accompaniment_system/audio/song.wav") 0.6) )
+    ;(at (nome (- beat 1)) (play-sample (load-sample "src/accompaniment_system/audio/song.wav") 0.6) )
+    ;(looper beat)
     (looper beat)
-    (looper1 (- beat 1))
 
-  )
+    )
 )

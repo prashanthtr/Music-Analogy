@@ -22,6 +22,14 @@
 
   )
 
+(defn random-subst [list pos]
+
+  ( charAtPos list (rand-int (lengthList list 0 )) 0 )
+
+  )
+
+
+
 (defn play-sample
   [samp vol]
   (if (= nil samp)
@@ -197,7 +205,7 @@
         bar-no (float (/ beat-no 8))
         ]
                                         ;(println random)
-    (println "Bar" (clojure.contrib.math/floor bar-no) )
+    ;(println "Bar" (clojure.contrib.math/floor bar-no) )
     ;(println random)
     forced
     )
@@ -229,7 +237,7 @@
         beat-no (- beat st)
         bar-no (float (/ beat-no 8))
         ]
-    (println "Bar" (clojure.contrib.math/floor bar-no) )
+    ;(println "Bar" (clojure.contrib.math/floor bar-no) )
     forced
     )
   )
@@ -288,7 +296,7 @@
   (println "User Input" (nome))
   )
 
-(def keyboard (midi-in "MidiKeys"))
+;(def keyboard (midi-in "MidiKeys"))
 
 (on-event [:midi :note-on]
           (fn [e]

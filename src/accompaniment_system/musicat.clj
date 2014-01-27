@@ -82,7 +82,6 @@
    (= (first sol) 'S) (count-hits (rest sol) (+ count 2))
    :else (count-hits (rest sol) (+ count 1))
 
-
    )
 
   )
@@ -104,7 +103,6 @@
     )
 
   )
-
 
 (defn attacks [rhythm attack]
 
@@ -378,5 +376,17 @@
         ]
     measure-links
     )
+
+  )
+
+;; shows the bar line repetition at 4 or 8 beat positions
+(defn barline [rhythm st]
+
+  (cond
+
+   (and (= '. (charAtPos rhythm 3 0))  (not= '. (charAtPos rhythm 4 0))) 4
+   (and (= (charAtPos rhythm 3 0) (charAtPos rhythm 4 0) )  (or (not (list? (charAtPos rhythm 3 0)) ) (not (list? (charAtPos rhythm 4 0)) ) ))  4
+   :else 8
+   )
 
   )
