@@ -933,3 +933,90 @@
 
     )
   )
+
+
+
+(defn repr2acc-l1 [D NA]
+
+  (cons
+
+   ;first beat
+   (cond
+
+    (and (=  (get (first NA) 'd) 'p) (= (get (first D) 's) 2)  ) '.
+    (and (=  (get (first NA) 'd) 'p) (not= (get (first D) 's) 2)  ) 'tum
+    :else '?X
+    )
+   ;rest of beats
+   (map
+    (fn [d1 d2]
+
+      (cond
+
+       (= (get d2 'd) 'p) '.
+       (= (get d2 'd) 's) '?X
+       (= (get d2 'd) 'D) '(?X)
+       )
+
+      )
+    D NA)
+
+   )
+
+  )
+
+(defn single-subs []
+
+  '(ta te tum)
+
+  )
+
+(defn double-subs []
+
+  '((ta te) (ta tum) (ta ta) (te te) (te ta) (tum ta) (tum tum))
+
+  )
+
+(defn repr2acc-l2 [D NA]
+
+  (let [
+        repr (repr2acc-l1 D NA)
+        ]
+
+    (concat
+
+     (map
+
+      (fn [d1 d2]
+
+        (cond
+
+         (and (= d1 '?X) (= d2 '.)) 'tum
+         (and (= d1 '(?X)) (= d2 '.)) '( (ta tum) (tum tum) )
+         (and (= d1 '?X) (not= d2 '.)) (single-subs)
+         (and (= d1 '(?X)) (not= d2 '.)) (double-subs)
+         :else d1
+         )
+
+        )
+      repr (rest repr)
+
+
+      )
+
+     (list
+
+      (cond
+
+       (= (last repr) '.) '.
+       (= (last repr) '?X) (single-subs)
+       (= (last repr) '(?X)) (double-subs)
+       )
+
+      )
+
+      )
+
+    )
+
+  )
