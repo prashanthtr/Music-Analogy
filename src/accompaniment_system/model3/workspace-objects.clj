@@ -30,13 +30,16 @@
 
   (let [
         lit-abstr (literal-abstr diction)
-
         ]
+
     (map
 
      (fn [d bn l]
+       (cond
 
-       {'beatNo bn 'diction d 'literal l 'duration 1/4} ; partially production rules used here
+        (list? d) {'beatNo bn 'diction d 'literal l 'duration 1/4 'noteDuration 'EE}
+        :else {'beatNo bn 'diction d 'literal l 'duration 1/4 'noteDuration 'Q} ; partially production rules used here
+        )
 
        )
      diction (beatNum (lengthList diction 0)) lit-abstr
@@ -60,8 +63,8 @@
            ]
        (cond
 
-        (= d1 d2) {'bond-type 'sameness 'bond-value d1 'duration 1/2 'obj1 a1 'obj2 a2}
-        (and (not= d1 d2) (= d2 '.)) {'bond-type 'pitch-bend 'bond-value d1 'duration 1/2 'obj1 a1 'obj2 a2}
+        (= d1 d2) {'bond-type 'sameness 'bond-value d1 'duration 1/2 'noteDuration 'H 'obj1 a1 'obj2 a2}
+        (and (not= d1 d2) (= d2 '.)) {'bond-type 'pitch-bend 'bond-value d1 'duration 1/2 'noteDuration 'H 'obj1 a1 'obj2 a2}
         :else nil
         )
        )
@@ -96,7 +99,7 @@
                                  ]
                              (cond
 
-                              (= d1 d2) {'bond-type 'sameness 'bond-value d1 'duration 3/4 'obj1 (get a1 'obj1) 'obj2 (get a1 'obj2) 'obj3 (get a2 'obj2)  }
+                              (= d1 d2) {'bond-type 'sameness 'bond-value d1 'duration 3/4 'noteDuration 'HQ 'obj1 (get a1 'obj1) 'obj2 (get a1 'obj2) 'obj3 (get a2 'obj2)  }
                               :else nil
                               )
                              )
@@ -283,4 +286,63 @@
     (distinct (concat valid-combinations2 valid-combinations3 valid-combinations4))
     )
 
+  )
+
+;Takes in 2 objects of a string, descriptor-types, gets relevant descriptions and returns a bond based on the descriptor types.
+; bond is either sameness, difference
+
+
+(defn inner-bonds [obj1 obj2 d-type]
+
+  (let [
+        d1 (get obj1 d-type)
+        d2 (get obj2 d-type)
+        relation (cond
+
+                  (= d1 d2) 'sameness
+                  :else 'difference
+                  )
+        ]
+    (str relation " of " d-type " between " (get obj1 'beatNo) " and " (get obj2 'beatNo))
+    )
+  )
+
+
+;;need to fix it for literal
+
+(defn ret-relevant-descriptions [d-type obj]
+
+  (map
+
+   (fn [d1]
+
+
+     (let [
+           val (get d1 d-type)
+           dur (get d1 'duration)
+           ]
+       (cond
+        (not= val nil) val
+        :else (cond
+
+               (and (= d-type 'literal)  (= nil (get d1 d-type)))
+               ; object is composite
+               (list (get (get d1 'obj1) d-type) (get (get d1 'obj2) d-type))
+               (not= d-type 'diction) (get d1 d-type)
+               :else (cond
+                                        ; composite object
+                      (= (get d1 'bond-type) 'sameness)
+                      ( take (* dur 4) (create-arr (get d1 'bond-value))  )
+                      :else
+                      (cons (get d1 'bond-value) (take (- (* dur 4) 1) (create-arr '.) ))
+                      )
+
+               )
+
+
+        )
+       )
+     )
+
+   obj)
   )
