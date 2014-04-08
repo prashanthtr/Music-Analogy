@@ -69,11 +69,11 @@
 
   (let [
 
-        assoc (build-dict-sym-assoc diction {} 0 0)
+        assocn (build-dict-sym-assoc diction {} 0 0)
         strs     (map
                   (fn [d]
 
-                    (get assoc d)
+                    (get assocn d)
 
                     )
                   diction)

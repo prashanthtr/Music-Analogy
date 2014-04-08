@@ -34,16 +34,14 @@
   )
 
 
-
-(defn draw-l1-l2 [l1 l2]
+(defn draw-l1-l2 [l1 l2 tl1 tl2]
 
   (let [
         treel1 (tree l1)
         treel2 (tree l2)
         ]
-    (println treel1)
-    ()
-    (draw-tree [(into [] (concat ['L1] treel1)) (into [] (concat ['L2] treel2))])
+    ;(println treel1)
+    (vijual/draw-tree [(into [] (concat [tl1] treel1)) (into [] (concat [tl2] treel2))])
     )
   )
 

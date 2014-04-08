@@ -49,3 +49,15 @@
    )
 
   )
+
+
+(defn clean-rep [lists]
+
+  (cond
+
+   (empty? lists) nil
+   (= nil (first lists))  (clean-rep (rest lists))
+   :else (cons (first lists) (clean-rep (rest lists)))
+   )
+
+  )

@@ -1,6 +1,5 @@
 ;; This file generates a transformation function from L1 and L2. L1 and L2 are described as workspace objects with certain representations. This contains the methods needed to obtain transformations between the workspace representations of L1 and L2.
 
-
 ;The general transformation is of the form "replace Beat no ____ by _____ ".
 ; Relational transformations:  "replace description-facet by relation
 ; Non relational transformations: "replace Beat no 4 by "ta, te, tum, Q1, (ta te)"
@@ -87,8 +86,8 @@
   (cond
 
    (and (= cnt (dec (lengthList obj 0)) ) (or (= (charAtPos obj cnt 0) 'H) (= (charAtPos obj cnt 0) 'HQ) (= (charAtPos obj cnt 0) '(Q Q)) ) )
-   (cons 'group-reason (hit-relations obj (inc cnt)))
-
+   (cons 'sameness (hit-relations obj (inc cnt)))
+   ;; sameness - group reason
    (>= cnt (dec (lengthList obj 0))) nil
    :else (let [
 
@@ -97,8 +96,9 @@
                ]
            (cond
 
-            (or (= o1 'H) (= o1 '(Q Q)) ) (concat (list 'group-reason (compr o1 o2)) (hit-relations obj (inc cnt))  )
-            (= o1 'HQ) (concat (list 'group-reason 'group-reason (compr o1 o2)) (hit-relations obj (inc cnt)))
+            (or (= o1 'H) (= o1 '(Q Q)) ) (concat (list 'sameness (compr o1 o2)) (hit-relations obj (inc cnt))  )   ;; sameness - group reason
+
+            (= o1 'HQ) (concat (list 'sameness 'sameness (compr o1 o2)) (hit-relations obj (inc cnt)))
             :else (cond
 
                    (= o1 o2) (cons 'sameness (hit-relations obj (inc cnt)))
@@ -107,9 +107,7 @@
             )
            )
    )
-
   )
-
 
 (defn changed-obj-bonds [i-facet i-obj m-facet m-obj]
 
@@ -294,6 +292,8 @@
 
    )
   )
+
+
 
 ;; Right now it Assumes that only one object changes between o1 and o2.
 (defn changed-obj-pos [obj1 obj2 pos]
